@@ -29,7 +29,7 @@ namespace UIFramework
             MainWindow = window;
             window.Init(this);
 
-            Title += $" WIP BETA BUILD Version: {asssemblyVersion}";
+            Title += $" Version: {asssemblyVersion}";
             Title += $": {TranslationSource.GetText("OPENGL_VERSION")}: " + GL.GetString(StringName.Version);
 
             ProcessLoading = new ProcessLoading();
