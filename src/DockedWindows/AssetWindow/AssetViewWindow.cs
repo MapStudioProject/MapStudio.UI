@@ -353,13 +353,26 @@ namespace MapStudio.UI
                             ImGui.Image((IntPtr)icon, new Vector2(itemWidth, itemWidth));
 
                             var pos2 = ImGui.GetCursorPos();
+
+                            ImGui.PushStyleColor(ImGuiCol.Button, ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 0)));
+                            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 0.1f)));
+
                             if (obj.Favorited)
-                            {
-                                ImGui.SetCursorPos(new Vector2(pos1.X, pos1.Y ));
                                 ImGui.PushStyleColor(ImGuiCol.Text, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 0, 1)));
-                                ImGui.Text($"  {IconManager.STAR_ICON}   ");
-                                ImGui.PopStyleColor();
+                            else
+                                ImGui.PushStyleColor(ImGuiCol.Text, ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 0.2f)));
+
+
+                            ImGui.SetCursorPos(new Vector2(pos1.X+1, pos1.Y+1));
+                            ImGui.PushID(obj.ID);
+                            if (ImGui.Button($"  {IconManager.STAR_ICON}  "))
+                            {
+                                obj.Favorited = !obj.Favorited;
+                                Config.AddToFavorites(obj);
                             }
+
+                            ImGui.PopStyleColor(3);
+
                             ImGui.SetCursorPos(pos2);
 
                             var defaultFontScale = ImGui.GetIO().FontGlobalScale;
