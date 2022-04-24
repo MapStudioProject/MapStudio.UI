@@ -106,6 +106,13 @@ namespace UIFramework
                 ImGui.PopStyleVar(2);
                 ImGui.PopStyleColor(1);
 
+                //Display FPS at right side of screen
+                float width = ImGui.GetWindowWidth();
+                float framerate = ImGui.GetIO().Framerate;
+
+                ImGui.SetCursorPosX(width - 100);
+                ImGui.Text($"({framerate:0.#} FPS)");
+
                 ImGui.EndMainMenuBar();
             }
 
