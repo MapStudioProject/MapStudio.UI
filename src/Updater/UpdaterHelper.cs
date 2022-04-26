@@ -20,7 +20,7 @@ namespace MapStudio.UI
         private static string _owner = "";
         private static string _repo = "";
         private static string _process_name = "";
-        private static string _version_txt = "";
+        private static string _version_txt = "Version.txt";
 
         private static Release[] releases;
 
@@ -101,9 +101,13 @@ namespace MapStudio.UI
             }
         }
 
-        public static async Task DownloadRelease(string folder, Release release, int assetIndex)
+        public static async Task DownloadRelease(string folder, Release release, int assetIndex, Action onFinished = null)
         {
+            //ProgressBar progressBar = new ProgressBar();
+
             Console.WriteLine();
+            ProcessLoading.Instance.Update(0, 100, $"Downloading release { release.Name}", "Updater");
+
             Console.WriteLine($"Downloading release {release.Name} Asset { release.Assets[assetIndex].Name}!");
             string address = release.Assets[assetIndex].BrowserDownloadUrl;
 
@@ -116,21 +120,31 @@ namespace MapStudio.UI
                 webClient.Proxy = webProxy;
                 webClient.DownloadProgressChanged += (s, e) =>
                 {
-               //     progressBar.Report(e.ProgressPercentage / 100.0f);
-                    //Thread.Sleep(20);
+                    ProcessLoading.Instance.Update(e.ProgressPercentage, 100, $"Downloading release { release.Name}", "Updater");
+                    Thread.Sleep(20);
                 };
                 Uri uri = new Uri(address);
                 await webClient.DownloadFileTaskAsync(uri, $"{folder}\\{name}.zip").ConfigureAwait(false);
 
+             //   progressBar.Dispose();
+
                 Console.WriteLine($"");
+
+                ProcessLoading.Instance.Update(0, 100, $"Extracting update!", "Updater");
 
                 Console.WriteLine($"Extracting update!");
                 //Extract the zip for intalling
                 ExtractZip($"{folder}\\{name}");
+
+                ProcessLoading.Instance.Update(90, 100, $"Updating version to {_version_txt}!", "Updater");
+
                 // Save the version info
                 WriteRepoVersion(folder, release);
 
+                ProcessLoading.Instance.Update(100, 100, $"Download finished!", "Updater");
+
                 Console.WriteLine($"Download finished!");
+                onFinished?.Invoke();
             }
         }
 
@@ -142,7 +156,7 @@ namespace MapStudio.UI
             proc.StartInfo.WorkingDirectory = Toolbox.Core.Runtime.ExecutableDir;
             proc.StartInfo.CreateNoWindow = false;
             //-d to download. -i to install. Then boot the tool
-            proc.StartInfo.Arguments = $"-d -i {bootCommand}";
+            proc.StartInfo.Arguments = $"-i {bootCommand}";
             proc.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
             proc.Start();
             Environment.Exit(0);
