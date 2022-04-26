@@ -19,7 +19,7 @@ namespace UIFramework
         ImGuiController _controller;
         ProcessLoading ProcessLoading = null;
 
-        public Framework(MainWindow window, GraphicsMode gMode, 
+        public Framework(MainWindow window, GraphicsMode gMode, string asssemblyVersion,
             string name = "TRACK_STUDIO", int width = 1600, int height = 900) : base(width, height, gMode,
                              TranslationSource.GetText(name),
                              GameWindowFlags.Default,
@@ -28,9 +28,8 @@ namespace UIFramework
         {
             MainWindow = window;
             window.Init(this);
-            var asssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
-            Title += $" WIP BETA BUILD Version: {asssemblyVersion}";
+            Title += $" Version: {asssemblyVersion}";
             Title += $": {TranslationSource.GetText("OPENGL_VERSION")}: " + GL.GetString(StringName.Version);
 
             ProcessLoading = new ProcessLoading();
