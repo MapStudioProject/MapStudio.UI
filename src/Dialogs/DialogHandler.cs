@@ -52,7 +52,7 @@ namespace MapStudio.UI
             string message = ex.Message.Replace("'", "");
 
             Clipboard.SetText($"{ex.Message} \n{ex.StackTrace}");
-            TinyFileDialog.MessageBoxErrorOk($"Failed to open file format! {message} Details copied to clipboard!");
+            TinyFileDialog.MessageBoxErrorOk($"{message} Details copied to clipboard!");
         }
         public static void Show(string name, float width, float height, Action dialogRender, Action<bool> dialogResult)
         {
