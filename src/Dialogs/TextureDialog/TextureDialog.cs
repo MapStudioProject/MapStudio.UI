@@ -531,22 +531,31 @@ namespace MapStudio.UI
             {
                 encoding = true;
 
-                //Encode the current format
-                if (!texture.Encoded) {
-                    texture.EncodeTexture(texture.ActiveArrayIndex);
-                    texture.Encoded = true;
+                try
+                {
+                    //Encode the current format
+                    if (!texture.Encoded)
+                    {
+                        texture.EncodeTexture(texture.ActiveArrayIndex);
+                        texture.Encoded = true;
+                    }
+                    TaskProgress = "Decoding texture..";
+
+                    //Decode the newly encoded image data
+                    decodedImage = texture.DecodeTexture(texture.ActiveArrayIndex);
+                    //Check if the texture has been changed or not while the thread is running
+                    if (texture != Textures[selectedIndex])
+                        return;
+
+                    TaskProgress = $"Encoded {texture.Format} in {texture.EncodingTime}";
+                    finishedEncoding = true;
+                    encoding = false;
                 }
-                TaskProgress = "Decoding texture..";
-
-                //Decode the newly encoded image data
-                decodedImage = texture.DecodeTexture(texture.ActiveArrayIndex);
-                //Check if the texture has been changed or not while the thread is running
-                if (texture != Textures[selectedIndex])
-                    return;
-
-                TaskProgress = $"Encoded {texture.Format} in {texture.EncodingTime}";
-                finishedEncoding = true;
-                encoding = false;
+                catch
+                {
+                    TaskProgress = $"Failed to encode {texture.Format}!";
+                    encoding = false;
+                }
             }));
             Thread.Start();
         }
