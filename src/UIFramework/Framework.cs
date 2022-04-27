@@ -28,9 +28,11 @@ namespace UIFramework
         {
             MainWindow = window;
             window.Init(this);
+            WindowsThemeUtil.Init(this.WindowInfo.Handle);
 
             Title += $" Version: {asssemblyVersion}";
             Title += $": {TranslationSource.GetText("OPENGL_VERSION")}: " + GL.GetString(StringName.Version);
+
 
             ProcessLoading = new ProcessLoading();
             ProcessLoading.OnUpdated += delegate

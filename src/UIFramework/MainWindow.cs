@@ -7,20 +7,9 @@ using ImGuiNET;
 using System.ComponentModel;
 using OpenTK;
 using OpenTK.Input;
-using System.Drawing;
-using System.Runtime.InteropServices;
 
 namespace UIFramework
 {
-    #region WINAPI
-    [DllImport("dwmapi.dll", SetLastError = true)]
-    private static extern bool DwmSetWindowAttribute(IntPtr handle, int param, in int value, int size);
-
-
-    [DllImport("uxtheme.dll", SetLastError = true)]
-    private static extern bool SetWindowTheme(IntPtr handle, string? subAppName, string? subIDList);
-    #endregion
-
     public class MainWindow : DockSpaceWindow
     {
         /// <summary>
@@ -52,18 +41,6 @@ namespace UIFramework
 
         public void OnApplicationLoad()
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                //Support dark mode on Windows
-                //ported from https://github.com/libsdl-org/SDL/issues/4776#issuecomment-926976455
-
-                SetWindowTheme(_window.WindowInfo.Handle, "DarkMode_Explorer", null);
-
-                ToggleDarkmode(true);
-            }
-
-
-            
             this.Name = "WindowSpace";
 
             //Disable the docking buttons
@@ -82,19 +59,6 @@ namespace UIFramework
             MapStudio.UI.ThemeHandler.Load();
             
             OnLoad();
-        }
-        
-        /// <summary>
-        /// Enables/disables darkmode for this window (works only on Windows 10+)
-        /// </summary>
-        /// <param name="value"></param>
-        public void ToggleDarkmode(bool value)
-        {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                if (!DwmSetWindowAttribute(_window.WindowInfo.Handle, 20, value ? 1 : 0, sizeof(int)))
-                    DwmSetWindowAttribute(_window.WindowInfo.Handle, 19, value ? 1 : 0, sizeof(int));
-            }
         }
 
         public void OnRenderFrame()
