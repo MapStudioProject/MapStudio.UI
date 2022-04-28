@@ -18,16 +18,22 @@ namespace MapStudio.UI
 
         public static void Hide()
         {
-            var handle = GetConsoleWindow();
-            // Hide
-            ShowWindow(handle, SW_HIDE);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var handle = GetConsoleWindow();
+                // Hide
+                ShowWindow(handle, SW_HIDE);
+            }
         }
 
         public static void Show()
         {
-            var handle = GetConsoleWindow();
-            // Show
-            ShowWindow(handle, SW_SHOW);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var handle = GetConsoleWindow();
+                // Show
+                ShowWindow(handle, SW_SHOW);
+            }
         }
     }
 }
