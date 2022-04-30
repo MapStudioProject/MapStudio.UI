@@ -486,7 +486,7 @@ namespace MapStudio.UI
                     bool check = node.IsChecked;
                     Vector2 size = new Vector2(ImGui.GetItemRectSize().Y);
 
-                    if (ImguiCustomWidgets.EyeToggle($"##check{node.ID}", ref check, size)) {
+                    if (ImguiCustomWidgets.EyeToggle($"{node.ID}check", ref check, size)) {
                         if (node.IsSelected)
                         {
                             foreach (var n in SelectedNodes)

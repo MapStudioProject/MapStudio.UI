@@ -26,7 +26,8 @@ namespace MapStudio.UI
             ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0));
             ImGui.PushStyleColor(ImGuiCol.Text, texColor);
 
-            bool clicked = ImGui.Button(value ? "   \uf06e   " : "   \uf070   " + $"##{label}", size);
+            ImGui.Button(value ? "   \uf06e   " : "   \uf070   " + $"##{label}", size);
+            bool clicked = ImGui.IsItemClicked(0);
             if (clicked)
                 value = !value;
 
