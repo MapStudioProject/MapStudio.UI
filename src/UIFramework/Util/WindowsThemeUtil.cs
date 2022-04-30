@@ -26,11 +26,11 @@ namespace MapStudio.UI
 
         public static void Init(IntPtr handle)
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major>=10) //only works on windows 10+
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major >= 10) //only works on windows 10+
             {
                 //Support dark mode on Windows
                 //ported from https://github.com/libsdl-org/SDL/issues/4776#issuecomment-926976455
-                
+
                 static void ToggleDarkmode(IntPtr handle, bool value)
                 {
                     if (!DwmSetWindowAttribute(handle, 20, value ? 1 : 0, sizeof(int)))
@@ -38,8 +38,8 @@ namespace MapStudio.UI
                 }
 
                 SetWindowTheme(handle, "DarkMode_Explorer", null);
-                
-                
+
+
                 //"bind" darkmode to console window
                 var consoleHandle = FindWindow(null, Console.Title);
 
@@ -64,9 +64,10 @@ namespace MapStudio.UI
                 }
 
                 System.Timers.Timer timer = new System.Timers.Timer(1000);
-                timer.Elapsed+= (o,e) => CheckDarkmode();
+                timer.Elapsed += (o, e) => CheckDarkmode();
 
                 timer.Start();
+            }
         }
     }
 }
