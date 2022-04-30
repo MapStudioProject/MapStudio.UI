@@ -9,8 +9,15 @@ namespace MapStudio.UI
     internal class WindowsThemeUtil
     {
         #region WINAPI
+        [DllImport("user32.dll")]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+
         [DllImport("dwmapi.dll", SetLastError = true)]
         private static extern bool DwmSetWindowAttribute(IntPtr handle, int param, in int value, int size);
+
+        [DllImport("dwmapi.dll", SetLastError = true)]
+        private static extern bool DwmGetWindowAttribute(IntPtr handle, int param, out int value, int size);
 
 
         [DllImport("uxtheme.dll", SetLastError = true)]
@@ -19,27 +26,47 @@ namespace MapStudio.UI
 
         public static void Init(IntPtr handle)
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version.Major>=10) //only works on windows 10+
             {
                 //Support dark mode on Windows
                 //ported from https://github.com/libsdl-org/SDL/issues/4776#issuecomment-926976455
+                
+                static void ToggleDarkmode(IntPtr handle, bool value)
+                {
+                    if (!DwmSetWindowAttribute(handle, 20, value ? 1 : 0, sizeof(int)))
+                        DwmSetWindowAttribute(handle, 19, value ? 1 : 0, sizeof(int));
+                }
 
                 SetWindowTheme(handle, "DarkMode_Explorer", null);
-                ToggleDarkmode(handle, true);
-            }
-        }
+                
+                
+                //"bind" darkmode to console window
+                var consoleHandle = FindWindow(null, Console.Title);
 
-        /// <summary>
-        /// Enables/disables darkmode for this window (works only on Windows 10+)
-        /// </summary>
-        /// <param name="value"></param>
-        public static void ToggleDarkmode(IntPtr handle, bool value)
-        {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                if (!DwmSetWindowAttribute(handle, 20, value ? 1 : 0, sizeof(int)))
-                    DwmSetWindowAttribute(handle, 19, value ? 1 : 0, sizeof(int));
-            }
+                bool isDarkMode = false;
+
+                var windowHandle = handle;
+
+                void CheckDarkmode()
+                {
+                    int value = 0;
+
+                    if (!DwmGetWindowAttribute(consoleHandle, 20, out value, sizeof(int)))
+                        DwmGetWindowAttribute(consoleHandle, 19, out value, sizeof(int));
+
+                    bool shouldBeDarkMode = value == 1;
+
+                    if (isDarkMode != shouldBeDarkMode)
+                    {
+                        ToggleDarkmode(windowHandle, shouldBeDarkMode);
+                        isDarkMode = shouldBeDarkMode;
+                    }
+                }
+
+                System.Timers.Timer timer = new System.Timers.Timer(1000);
+                timer.Elapsed+= (o,e) => CheckDarkmode();
+
+                timer.Start();
         }
     }
 }
