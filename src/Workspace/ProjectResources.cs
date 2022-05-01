@@ -41,7 +41,7 @@ namespace MapStudio.UI
             string dir = ProjectFile.WorkingDirectory;
 
             foreach (var asset in ProjectFile.FileAssets)
-                workspace.LoadFileFormat($"{ProjectFolder}\\{asset}", true);
+                workspace.LoadFileFormat(Path.Combine(ProjectFolder,asset), true);
 
             ProjectFile.LoadSettings(context, workspace);
             ProjectFile.WorkingDirectory = dir;
@@ -60,10 +60,10 @@ namespace MapStudio.UI
                 string path = asset.FileInfo.FileName;
 
                 ProjectFile.FileAssets.Add(path);
-                if (!File.Exists($"{ProjectFolder}\\{path}") && File.Exists(asset.FileInfo.FilePath))
-                    File.Copy(asset.FileInfo.FilePath, $"{ProjectFolder}\\{path}");
+                if (!File.Exists(Path.Combine(ProjectFolder,path)) && File.Exists(asset.FileInfo.FilePath))
+                    File.Copy(asset.FileInfo.FilePath, Path.Combine(ProjectFolder,path));
                 else
-                    asset.Save(File.OpenWrite($"{ProjectFolder}\\{path}"));
+                    asset.Save(File.OpenWrite(Path.Combine(ProjectFolder,path)));
             }
             //Save json file
             ProjectFile.Save(filePath);

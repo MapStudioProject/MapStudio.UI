@@ -66,7 +66,7 @@ namespace MapStudio.UI
         public static List<string> GetLanguages()
         {
             List<string> languages = new List<string>();
-            foreach (var file in Directory.GetDirectories("Lib\\Languages")) {
+            foreach (var file in Directory.GetDirectories(Path.Combine("Lib","Languages"))) {
                 languages.Add(new DirectoryInfo(file).Name);
             }
             return languages;
@@ -85,8 +85,7 @@ namespace MapStudio.UI
         {
             if (LanguageKey == "English")
                 return;
-
-            foreach (var src in Directory.GetFiles($"{Runtime.ExecutableDir}\\Lib\\Languages/English"))
+            foreach (var src in Directory.GetFiles(Path.Combine(Runtime.ExecutableDir,"Lib","Languages","English")))
             {
                 string dest = src.Replace("Lib/Languages/English", $"Lib/Languages/{LanguageKey}");
                 DumpUntranslated(src, dest);
@@ -123,7 +122,7 @@ namespace MapStudio.UI
         static Dictionary<string, string> Load(string folder)
         {
             Dictionary<string, string> translated = new Dictionary<string, string>(); ;
-            foreach (var file in Directory.GetFiles($"{Runtime.ExecutableDir}\\Lib\\Languages/{folder}"))
+            foreach (var file in Directory.GetFiles(Path.Combine(Runtime.ExecutableDir,"Lib","Languages",folder)))
                 Load(file, translated);
             return translated;
         }

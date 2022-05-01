@@ -90,8 +90,8 @@ namespace MapStudio.UI
             if (!release.Assets[assetIndex].UpdatedAt.ToString().Equals(currentDate) || force)
             {
                 //Remove existing install directories if they exist
-                if (Directory.Exists($"{folder}\\{"latest"}" + "/"))
-                    Directory.Delete($"{folder}\\{"latest"}" + "/", true);
+                if (Directory.Exists(Path.Combine(folder,"latest")))
+                    Directory.Delete(Path.Combine(folder,"latest"), true);
 
                 DownloadRelease(folder, release, assetIndex).Wait();
             }
@@ -124,7 +124,7 @@ namespace MapStudio.UI
                     Thread.Sleep(20);
                 };
                 Uri uri = new Uri(address);
-                await webClient.DownloadFileTaskAsync(uri, $"{folder}\\{name}.zip").ConfigureAwait(false);
+                await webClient.DownloadFileTaskAsync(uri, Path.Combine(folder,$"{name}.zip")).ConfigureAwait(false);
 
              //   progressBar.Dispose();
 
@@ -134,7 +134,7 @@ namespace MapStudio.UI
 
                 Console.WriteLine($"Extracting update!");
                 //Extract the zip for intalling
-                ExtractZip($"{folder}\\{name}");
+                ExtractZip(Path.Combine(folder,name));
 
                 ProcessLoading.Instance.Update(90, 100, $"Updating version to {_version_txt}!", "Updater");
 
@@ -167,9 +167,9 @@ namespace MapStudio.UI
         /// </summary>
         public static void Install(string folderDir)
         {
-            string path = $"{folderDir}\\latest\\net5.0";
+            string path = Path.Combine(folderDir,"latest","net5.0");
             if (!Directory.Exists(path))
-                path = $"{folderDir}\\latest";
+                path = Path.Combine(folderDir,"latest");
 
             if (!Directory.Exists(path)) {
                 Console.WriteLine($"No downloaded directory found!");
@@ -203,7 +203,7 @@ namespace MapStudio.UI
 
                 File.Move(file, Path.Combine(folderDir, Path.GetFileName(file)));
             }
-            Directory.Delete($"{folderDir}\\latest", true);
+            Directory.Delete(Path.Combine(folderDir,"latest"), true);
         }
 
         static async Task GetReleases(GitHubClient client)
@@ -217,10 +217,10 @@ namespace MapStudio.UI
         //
         static string GetRepoCompileDate(string folder)
         {
-            if (!File.Exists($"{folder}\\{_version_txt}"))
+            if (!File.Exists(Path.Combine(folder,_version_txt)))
                 return "";
 
-            string[] versionInfo = File.ReadLines($"{folder}\\{_version_txt}").ToArray();
+            string[] versionInfo = File.ReadLines(Path.Combine(folder,_version_txt)).ToArray();
             if (versionInfo.Length >= 3)
                 return versionInfo[1];
 
@@ -230,7 +230,7 @@ namespace MapStudio.UI
         //Stores the current release information within a .txt file
         static void WriteRepoVersion(string folder, Release release)
         {
-            using (StreamWriter writer = new StreamWriter($"{folder}\\{_version_txt}"))
+            using (StreamWriter writer = new StreamWriter(Path.Combine(folder,_version_txt)))
             {
                 writer.WriteLine($"{release.TagName}");
                 writer.WriteLine($"{release.Assets[0].UpdatedAt.ToString()}");
