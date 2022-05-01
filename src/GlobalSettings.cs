@@ -74,9 +74,9 @@ namespace MapStudio.UI
         /// <returns></returns>
         public static GlobalSettings Load()
         {
-            if (!File.Exists($"{Runtime.ExecutableDir}\\ConfigGlobal.json")) { new GlobalSettings().Save(); }
+            if (!File.Exists(Path.Combine(Runtime.ExecutableDir,"ConfigGlobal.json"))) { new GlobalSettings().Save(); }
 
-            var config = JsonConvert.DeserializeObject<GlobalSettings>(File.ReadAllText($"{Runtime.ExecutableDir}\\ConfigGlobal.json"), new
+            var config = JsonConvert.DeserializeObject<GlobalSettings>(File.ReadAllText(Path.Combine(Runtime.ExecutableDir,"ConfigGlobal.json")), new
                 JsonSerializerSettings()
             {
                 //If settings get added, don't alter the defaults
@@ -128,7 +128,7 @@ namespace MapStudio.UI
         /// </summary>
         public void Save()
         {
-            File.WriteAllText($"{Runtime.ExecutableDir}\\ConfigGlobal.json", JsonConvert.SerializeObject(this, Formatting.Indented));
+            File.WriteAllText(Path.Combine(Runtime.ExecutableDir,"ConfigGlobal.json"), JsonConvert.SerializeObject(this, Formatting.Indented));
             ApplyConfiguration();
         }
 
@@ -223,7 +223,7 @@ namespace MapStudio.UI
             static string DefaultProjectPath()
             {
                 string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                return $"{local}\\MapStudio";
+                return Path.Combine(local,"MapStudio");
             }
 
             public void ResetProjectDir() {

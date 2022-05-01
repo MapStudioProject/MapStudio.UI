@@ -40,7 +40,7 @@ namespace MapStudio.UI
 
         public static AssetConfig Load()
         {
-            string path = $"{Runtime.ExecutableDir}\\Lib\\AssetConfig.json";
+            string path = Path.Combine(Runtime.ExecutableDir,"Lib","AssetConfig.json");
             if (!File.Exists(path))
                 new AssetConfig().Save();
 
@@ -50,7 +50,7 @@ namespace MapStudio.UI
         public void Save()
         {
             var json = JsonConvert.SerializeObject(this, Formatting.Indented);
-            File.WriteAllText($"{Runtime.ExecutableDir}\\Lib\\AssetConfig.json", json);
+            File.WriteAllText(Path.Combine(Runtime.ExecutableDir,"Lib","AssetConfig.json"), json);
         }
 
         public class AssetSettings
