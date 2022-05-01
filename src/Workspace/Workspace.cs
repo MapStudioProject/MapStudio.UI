@@ -591,7 +591,7 @@ namespace MapStudio.UI
             if (!string.IsNullOrEmpty(Resources.ProjectFolder))
             {
                 string dir = Resources.ProjectFile.WorkingDirectory;
-                filePath = $"{dir}\\{Path.GetFileName(filePath)}";
+                filePath = Path.Combine(dir,Path.GetFileName(filePath));
                 SaveFileData(file, filePath);
                 return;
             }
@@ -671,13 +671,13 @@ namespace MapStudio.UI
             SaveEditorData(true);
             //Save as project
             OnProjectSave?.Invoke(this, EventArgs.Empty);
-            Resources.SaveProject($"{folderPath}\\Project.json", ViewportWindow.Pipeline._context, this);
+            Resources.SaveProject(Path.Combine(folderPath,"Project.json"), ViewportWindow.Pipeline._context, this);
             //Save the thumbnail in the current view
             var thumb = ViewportWindow.SaveAsScreenshot(720, 512);
-            thumb.Save($"{folderPath}\\Thumbnail.png");
+            thumb.Save(Path.Combine(folderPath,"Thumbnail.png"));
 
             //Update icon cache for thumbnails used
-            IconManager.LoadTextureFile($"{folderPath}\\Thumbnail.png", 64, 64, true);
+            IconManager.LoadTextureFile(Path.Combine(folderPath,"Thumbnail.png"), 64, 64, true);
 
             PrintErrors();
         }

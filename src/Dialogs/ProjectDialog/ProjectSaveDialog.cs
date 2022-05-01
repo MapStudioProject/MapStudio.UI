@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace MapStudio.UI
         public string GetProjectDirectory()
         {
             var settings = GlobalSettings.Current;
-            return $"{settings.Program.ProjectDirectory}\\{ProjectName}";
+            return Path.Combine(settings.Program.ProjectDirectory,ProjectName);
         }
 
         public ProjectSaveDialog(string name) {
