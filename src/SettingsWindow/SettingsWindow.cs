@@ -88,8 +88,8 @@ namespace MapStudio.UI
             {
                 //Set the adjustable global font scale
                 ImGui.GetIO().FontGlobalScale = Settings.Program.FontScale;
+                Settings.Save();
             }
-
         }
 
         private void DrawLanguageSettings()
