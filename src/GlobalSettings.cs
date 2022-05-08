@@ -105,6 +105,11 @@ namespace MapStudio.UI
                 ThemeHandler.UpdateTheme(theme);
         }
 
+        public void ReloadInput()
+        {
+            InputSettings.INPUT = this.InputSettings;
+        }
+
         /// <summary>
         /// Updates the gl context settings from the configuration file.
         /// </summary>

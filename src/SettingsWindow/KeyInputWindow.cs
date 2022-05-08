@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Numerics;
 using System.Threading.Tasks;
 using MapStudio.UI;
 using ImGuiNET;
@@ -15,6 +15,21 @@ namespace MapStudio.UI
 
         public static void Render()
         {
+            Vector2 size = new Vector2(ImGui.GetWindowWidth(), 23);
+
+            if (ImGui.Button(TranslationSource.GetText("SAVE"), size))
+            {
+                GlobalSettings.Current.InputSettings = InputSettings.INPUT;
+                GlobalSettings.Current.Save();
+            }
+
+            if (ImGui.Button(TranslationSource.GetText("RESET"), size))
+            {
+                //Update input settings to original values
+                InputSettings.INPUT = new InputSettings();
+                GlobalSettings.Current.Save();
+            }
+
             if (ImGui.CollapsingHeader("Camera Movement", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 ImGui.Columns(2);
