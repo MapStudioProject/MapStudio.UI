@@ -335,7 +335,7 @@ namespace MapStudio.UI
             }
 
             //Red only
-            if (isGrayscale)
+            if (isGrayscale && Name != null && Name.ToLower().EndsWith("spm"))
                 return TexFormat.BC4_UNORM;
             //Has transparency
             if (isAlphaTranslucent)
