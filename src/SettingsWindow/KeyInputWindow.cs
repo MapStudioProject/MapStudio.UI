@@ -29,7 +29,12 @@ namespace MapStudio.UI
                 InputSettings.INPUT = new InputSettings();
                 GlobalSettings.Current.Save();
             }
-
+            if (ImGui.CollapsingHeader("General", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                ImGui.Columns(2);
+                DrawConfigurableInput("FullScreen", InputSettings.INPUT.Scene, "FullScreen");
+                ImGui.Columns(1);
+            }
             if (ImGui.CollapsingHeader("Camera Movement", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 ImGui.Columns(2);
