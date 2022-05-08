@@ -93,11 +93,6 @@ namespace MapStudio.UI
             var value = field.GetValue(obj) as string;
 
             string[] args = value.Split("+");
-            string key = args.LastOrDefault();
-            bool isControl = args.Contains("Ctrl");
-            bool isShift = args.Contains("Shift");
-            bool isAlt = args.Contains("Alt");
-
             bool isActive = label == active_edit;
 
             var width = ImGui.GetColumnWidth();
@@ -121,6 +116,10 @@ namespace MapStudio.UI
                         input = newInput;
                         if (KeyEventInfo.State.KeyCtrl)
                             input = $"Ctrl+{input}";
+                        if (KeyEventInfo.State.KeyShift)
+                            input = $"Shift+{input}";
+                        if (KeyEventInfo.State.KeyAlt)
+                            input = $"Alt+{input}";
                     }
 
                     field.SetValue(obj, input);
