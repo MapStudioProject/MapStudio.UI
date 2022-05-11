@@ -116,13 +116,6 @@ namespace UIFramework
                 ImGui.EndMainMenuBar();
             }
 
-            var dock_id = ImGui.GetID("##DockspaceRoot");
-
-            unsafe
-            {
-                //Create an inital dock space for docking workspaces.
-                ImGui.DockSpace(dock_id, new System.Numerics.Vector2(0.0f, 0.0f), 0, window_class);
-            }
             //base.Render();
         }
 
