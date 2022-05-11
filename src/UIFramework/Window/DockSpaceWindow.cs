@@ -57,6 +57,31 @@ namespace UIFramework
             }
         }
 
+        public unsafe void SetupParentDock(uint parentDockID, IEnumerable<DockSpaceWindow> children)
+        {
+            //Check if the dock has been created or needs to be updated
+            if (ImGui.DockBuilderGetNode(parentDockID).NativePtr == null || UpdateDockLayout)
+            {
+                ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags.None;
+                uint main_id = parentDockID;
+
+                ImGui.DockBuilderRemoveNode(parentDockID); // Clear out existing layout
+                ImGui.DockBuilderAddNode(parentDockID, dockspace_flags); // Add empty node
+
+                foreach (var workspace in children)
+                    ImGui.DockBuilderDockWindow(workspace.GetWindowName(), main_id);
+
+                ImGui.DockBuilderFinish(parentDockID);
+                UpdateDockLayout = false;
+            }
+
+            unsafe
+            {
+                //Create an inital dock space for docking workspaces.
+                ImGui.DockSpace(parentDockID, new System.Numerics.Vector2(0.0f, 0.0f), 0, window_class);
+            }
+        }
+
         public void ReloadDockLayout(uint dockspaceId)
         {
             ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags.None;
