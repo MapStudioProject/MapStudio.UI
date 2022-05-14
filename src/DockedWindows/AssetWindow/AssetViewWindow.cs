@@ -195,10 +195,10 @@ namespace MapStudio.UI
                     if (isSelected)
                         ImGui.SetItemDefaultFocus();
                 }
-            }
-            ImGui.EndChild();
 
-            ImGui.PopItemWidth();
+                ImGui.PopItemWidth();
+                ImGui.EndChild();
+            }
         }
 
         private void DrawSearchBar()
