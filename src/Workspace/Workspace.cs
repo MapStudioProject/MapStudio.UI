@@ -18,7 +18,7 @@ namespace MapStudio.UI
     /// <summary>
     /// Represents a workspace instance of a workspace window.
     /// </summary>
-    public class Workspace : DockSpaceWindow, IDisposable
+    public class Workspace : DockSpaceWindow
     {
         public EventHandler OnProjectLoad;
         public EventHandler OnProjectSave;
@@ -855,7 +855,7 @@ namespace MapStudio.UI
             ActiveEditor?.OnEnter();
         }
 
-        public void Dispose()
+        public new void Dispose()
         {
             //Dispose files
             foreach (var file in Resources.Files)
@@ -878,6 +878,8 @@ namespace MapStudio.UI
             Outliner.SelectedNodes.Clear();
             DataCache.ModelCache.Clear();
             DataCache.TextureCache.Clear();
+            
+            base.Dispose();
         }
     }
 }

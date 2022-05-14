@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using ImGuiNET;
@@ -10,7 +11,7 @@ namespace UIFramework
     /// <summary>
     /// Represents a window to dock multiple docking windows.
     /// </summary>
-    public class DockSpaceWindow : Window
+    public class DockSpaceWindow : Window, IDisposable
     {
         /// <summary>
         /// A list of dockable windows that can dock to this dockspace.
@@ -128,10 +129,19 @@ namespace UIFramework
             {
                 uint windowId = ImGui.GetID($"###window_{this.Name}");
 
+                this.window_class = (ImGuiWindowClass*)Marshal.AllocHGlobal(sizeof(ImGuiWindowClass));
                 ImGuiWindowClass windowClass = new ImGuiWindowClass();
                 windowClass.ClassId = windowId;
                 windowClass.DockingAllowUnclassed = 0;
-                this.window_class = &windowClass;
+
+                Marshal.StructureToPtr(windowClass,(IntPtr)this.window_class,false);
+            }
+        }
+
+        public void Dispose() {
+            unsafe {
+                Marshal.FreeHGlobal((IntPtr)this.window_class);
+                this.window_class = (ImGuiWindowClass*)IntPtr.Zero;
             }
         }
     }
