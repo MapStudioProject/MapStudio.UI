@@ -402,6 +402,7 @@ void main()
             io.KeyMap[(int)ImGuiKey.X] = (int)Key.X;
             io.KeyMap[(int)ImGuiKey.Y] = (int)Key.Y;
             io.KeyMap[(int)ImGuiKey.Z] = (int)Key.Z;
+            io.KeyMap[(int)ImGuiKey.Space] = (int)Key.Space;
         }
 
         private void RenderImDrawData(ImDrawDataPtr draw_data)
