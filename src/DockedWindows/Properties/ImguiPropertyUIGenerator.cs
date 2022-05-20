@@ -262,7 +262,7 @@ namespace MapStudio.UI
                     ImGui.EndCombo();
                 }
             }
-            if (type == typeof(string))
+            else if (type == typeof(string))
             {
                 var inputValue = (string)property.GetValue(obj);
                 if (string.IsNullOrEmpty(inputValue))
@@ -273,7 +273,7 @@ namespace MapStudio.UI
                     propertyEdit.Value = inputValue;
                 }
             }
-            if (type == typeof(float))
+            else if (type == typeof(float))
             {
                 float inputValue = value == null ? 0.0f : (float)value;
                 if (ImGui.InputFloat(label, ref inputValue, 0, 0))
@@ -281,7 +281,7 @@ namespace MapStudio.UI
                     propertyEdit.Value = (float)inputValue;
                 }
             }
-            if (type == typeof(uint))
+            else if (type == typeof(uint))
             {
                 int inputValue = value == null ? 0 : (int)(uint)value;
                 if (ImGui.InputInt(label, ref inputValue, 0, 0, flags))
@@ -289,7 +289,7 @@ namespace MapStudio.UI
                     propertyEdit.Value = (uint)inputValue;
                 }
             }
-            if (type == typeof(int))
+            else if (type == typeof(int))
             {
                 int inputValue = value == null ? 0 : (int)value;
                 if (ImGui.InputInt(label, ref inputValue, 0, 0, flags))
@@ -297,7 +297,39 @@ namespace MapStudio.UI
                     propertyEdit.Value = (int)inputValue;
                 }
             }
-            if (type == typeof(bool))
+            else if (type == typeof(ushort))
+            {
+                int inputValue = value == null ? 0 : (ushort)value;
+                if (ImGui.InputInt(label, ref inputValue, 0, 0, flags))
+                {
+                    propertyEdit.Value = (ushort)inputValue;
+                }
+            }
+            else if (type == typeof(short))
+            {
+                int inputValue = value == null ? 0 : (short)value;
+                if (ImGui.InputInt(label, ref inputValue, 0, 0, flags))
+                {
+                    propertyEdit.Value = (short)inputValue;
+                }
+            }
+            else if (type == typeof(byte))
+            {
+                int inputValue = value == null ? 0 : (byte)value;
+                if (ImGui.InputInt(label, ref inputValue, 0, 0, flags))
+                {
+                    propertyEdit.Value = (byte)inputValue;
+                }
+            }
+            else if (type == typeof(sbyte))
+            {
+                int inputValue = value == null ? 0 : (sbyte)value;
+                if (ImGui.InputInt(label, ref inputValue, 0, 0, flags))
+                {
+                    propertyEdit.Value = (sbyte)inputValue;
+                }
+            }
+            else if (type == typeof(bool))
             {
                 bool inputValue = value == null ? false : (bool)value;
                 if (control == BindControl.ToggleButton)
@@ -322,7 +354,7 @@ namespace MapStudio.UI
                     }
                 }
             }
-            if (type == typeof(OpenTK.Vector3))
+            else if (type == typeof(OpenTK.Vector3))
             {
                 var inputValue = (OpenTK.Vector3)property.GetValue(obj);
                 var vec3 = new Vector3(inputValue.X, inputValue.Y, inputValue.Z);
