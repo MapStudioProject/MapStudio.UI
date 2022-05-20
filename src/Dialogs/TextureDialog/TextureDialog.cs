@@ -61,7 +61,7 @@ namespace MapStudio.UI
             //Check if in tool encoder supports them
             foreach (var format in formatList){
                 foreach (var decoder in FileManager.GetTextureDecoders()) {
-                    if (decoder.CanEncode(format) && !SupportedFormats.Contains(format)) {
+                    if (decoder.IsSupportedPlatform() && decoder.CanEncode(format) && !SupportedFormats.Contains(format)) {
 
                         SupportedFormats.Add(format);
                     }

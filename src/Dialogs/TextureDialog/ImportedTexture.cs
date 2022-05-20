@@ -252,12 +252,12 @@ namespace MapStudio.UI
             //Force DirectXTexLibrary to be used first (if the OS and hardware supports it)
             foreach (var decoder in decoders)
             {
-                if (decoder.ToString().Contains("DirectXTexLibrary"))
+                if (decoder.IsSupportedPlatform() && decoder.ToString().Contains("DirectXTexLibrary"))
                     EncodeSurface(decoder, surface);
             }
             //Use normal software decoders (slower) if it hasn't been encoded yet
             foreach (var decoder in decoders) {
-                if (!Encoded && decoder.CanEncode(Format))
+                if (!Encoded && decoder.IsSupportedPlatform() && decoder.CanEncode(Format))
                     EncodeSurface(decoder, surface);
             }
             //Failed to encode :(
