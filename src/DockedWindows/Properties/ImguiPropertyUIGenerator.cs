@@ -143,6 +143,10 @@ namespace MapStudio.UI
                     {
                         ImGui.SetColumnOffset(1, width * 0.25f);
                     }
+                    if (properties[i].PropertyType == typeof(Vector4))
+                    {
+                        ImGui.SetColumnOffset(1, width * 0.25f);
+                    }
 
                     ImGui.PushItemWidth(colwidth - 6);
 
@@ -374,6 +378,27 @@ namespace MapStudio.UI
                     ImGuiController.HideCursorInfiniteScroll();
                 if (ImGui.IsItemDeactivated())
                     ImGuiController.SetNormalCursor();
+            }
+            else if (type == typeof(Vector2))
+            {
+                var inputValue = (Vector2)property.GetValue(obj);
+
+                if (ImGui.DragFloat2(label, ref inputValue))
+                    propertyEdit.Value = inputValue;
+            }
+            else if (type == typeof(Vector3))
+            {
+                var inputValue = (Vector3)property.GetValue(obj);
+
+                if (ImGui.DragFloat3(label, ref inputValue))
+                    propertyEdit.Value = inputValue;
+            }
+            else if (type == typeof(Vector4))
+            {
+                var inputValue = (Vector4)property.GetValue(obj);
+
+                if (ImGui.DragFloat4(label, ref inputValue))
+                    propertyEdit.Value = inputValue;
             }
             if (readOnly)
             {
