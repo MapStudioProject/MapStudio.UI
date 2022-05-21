@@ -71,6 +71,11 @@ namespace MapStudio.UI
             GLContext.ActiveContext.UpdateViewport = true;
         }
 
+        public virtual void DrawMainMenuBar()
+        {
+
+        }
+
         public virtual void AfterLoaded()
         {
 
