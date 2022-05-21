@@ -145,7 +145,7 @@ namespace MapStudio.UI
                     }
                     if (properties[i].PropertyType == typeof(Vector4))
                     {
-                        ImGui.SetColumnOffset(1, width * 0.25f);
+                        ImGui.SetColumnOffset(1, width * 0.35f);
                     }
 
                     ImGui.PushItemWidth(colwidth - 6);
