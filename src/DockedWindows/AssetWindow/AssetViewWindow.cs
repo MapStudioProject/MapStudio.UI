@@ -280,7 +280,7 @@ namespace MapStudio.UI
             float itemWidth = Config.IconSize;
             float itemHeight = Config.IconSize;
 
-            var width = ImGui.GetWindowWidth() - ImGui.GetCursorPosX();
+            var width = Math.Max(ImGui.GetWindowWidth() - ImGui.GetCursorPosX(), 1);
 
             AssetItem doubleClickedAsset = null;
             var objects = (isSearch || ActiveCategory.IsFilterMode || filterFavorites) ? FilteredAssets : Assets;
@@ -291,7 +291,7 @@ namespace MapStudio.UI
             if (itemWidth == MIN_THUMB_SIZE)
                 columnCount = 1;
 
-            var rowCount = Math.Max(objects.Count / columnCount, 1);
+            var rowCount = Math.Max(objects.Count / columnCount, 1) + 1;
             var totalItemHeight = itemHeight + 22;
             if (columnCount == 1)
                 totalItemHeight = itemHeight;
