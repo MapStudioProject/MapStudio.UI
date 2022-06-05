@@ -370,6 +370,7 @@ namespace MapStudio.UI
                                 obj.Favorited = !obj.Favorited;
                                 Config.AddToFavorites(obj);
                             }
+                            ImGui.PopID();
 
                             ImGui.PopStyleColor(3);
 
