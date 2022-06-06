@@ -232,6 +232,7 @@ namespace MapStudio.UI
                 var tag = node.Tag;
                 var type = tag.GetType().GetProperty(handler.Name);
                 type.SetValue(tag, sender);
+                node.OnPropertyTagChanged?.Invoke(sender, handler);
             }
             GLContext.ActiveContext.UpdateViewport = true;
         }
