@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.ComponentModel;
+using System.Threading;
 using OpenTK;
 using OpenTK.Input;
 using MapStudio.UI;
@@ -29,14 +30,19 @@ namespace UIFramework
             MainWindow = window;
             window.Init(this);
 
-            try
+            var Thread = new Thread((ThreadStart)(() =>
             {
-                WindowsThemeUtil.Init(this.WindowInfo.Handle);
-            }
-            catch
-            {
+                try
+                {
+                    WindowsThemeUtil.Init(this.WindowInfo.Handle);
+                }
+                catch
+                {
 
-            }
+                }
+            }));
+            Thread.Start();
+
 
             Title += $" Version: {asssemblyVersion}";
             Title += $": {TranslationSource.GetText("OPENGL_VERSION")}: " + GL.GetString(StringName.Version);
@@ -63,6 +69,8 @@ namespace UIFramework
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+
+            Console.WriteLine($"Loading imgui controller");
 
             _controller = new ImGuiController(Width, Height);
             MainWindow.OnApplicationLoad();
