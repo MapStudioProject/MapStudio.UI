@@ -355,6 +355,7 @@ void main()
             foreach (Key key in Enum.GetValues(typeof(Key))) {
                 io.KeysDown[(int)key] = KeyboardState.IsKeyDown(key);
             }
+            io.KeysDown[(int)ImGuiKey.Enter] = KeyboardState.IsKeyDown(Key.Enter);
 
             foreach (var c in PressedChars) {
                 io.AddInputCharacter(c);
