@@ -32,7 +32,7 @@ namespace MapStudio.UI
             if (ImguiCustomWidgets.BeginTab("projectTab", "Projects"))
             {
                 var width = ImGui.GetWindowWidth();
-                if (ImGui.Button($"  {IconManager.DELETE_ICON}   "))
+                if (ImGui.Button($"  {IconManager.DELETE_ICON}   ") && !string.IsNullOrEmpty(SelectedProject))
                 {
                     string projectName = new DirectoryInfo(SelectedProject).Name;
                     int result = TinyFileDialog.MessageBoxInfoYesNo(string.Format("Are you sure you want to delete {0}?", projectName));

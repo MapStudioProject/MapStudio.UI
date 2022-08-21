@@ -59,28 +59,29 @@ namespace MapStudio.UI
         {
             //Use default font as this requires monospae fonts
             var font = ImGuiController.DefaultFont;
-            ImGui.PushFont(font);
+          //  ImGui.PushFont(font);
             Render(mem_data, mem_size);
-            ImGui.PopFont();
+         //   ImGui.PopFont();
         }
 
         private unsafe void Render(byte[] mem_data, int mem_size, int base_display_addr = 0)
         {
             float line_height = ImGuiNative.igGetTextLineHeight();
             int line_total_count = (mem_size + Rows - 1) / Rows;
-
-            ImGuiNative.igSetNextWindowContentSize(new Vector2(0.0f, line_total_count * line_height));
-            ImGui.BeginChild("##scrolling", new Vector2(0, -ImGuiNative.igGetFrameHeightWithSpacing()), false, 0);
-
-            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(0, 0));
-            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-
+            float glyph_width = ImGui.CalcTextSize("F").X;
+            float cell_width = glyph_width * 3; // "FF " we include trailing space in the width to easily catch clicks everywhere
             int addr_digits_count = 0;
             for (int n = base_display_addr + mem_size - 1; n > 0; n >>= 4)
                 addr_digits_count++;
 
-            float glyph_width = ImGui.CalcTextSize("F").X;
-            float cell_width = glyph_width * 3; // "FF " we include trailing space in the width to easily catch clicks everywhere
+            DrawHeader(base_display_addr, cell_width, addr_digits_count);
+
+            ImGuiNative.igSetNextWindowContentSize(new Vector2(0.0f, line_total_count * line_height));
+            ImGui.BeginChild("##scrolling", new Vector2(0, -ImGuiNative.igGetFrameHeightWithSpacing() - 22), false, 0);
+
+            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(0, 0));
+            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
+
 
             var clipper = new ImGuiListClipper2(line_total_count, line_height);
             int visible_start_addr = clipper.DisplayStart * Rows;
@@ -112,8 +113,12 @@ namespace MapStudio.UI
             for (int line_i = clipper.DisplayStart; line_i < clipper.DisplayEnd; line_i++) // display only visible items
             {
                 int addr = line_i * Rows;
-                ImGui.Text(FixedHex(base_display_addr + addr, addr_digits_count) + ": ");
+
+                ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.TextDisabled]);
+                ImGui.Text(FixedHex(base_display_addr + addr, Math.Max(addr_digits_count, 6)) + ": ");
                 ImGui.SameLine();
+                ImGuiHelper.IncrementCursorPosX(15);
+                ImGui.PopStyleColor();
 
                 // Draw Hexadecimal
                 float line_start_x = ImGuiNative.igGetCursorPosX();
@@ -181,13 +186,15 @@ namespace MapStudio.UI
                 // Draw ASCII values
                 addr = line_i * Rows;
                 var asciiVal = new System.Text.StringBuilder(2 + Rows);
-                asciiVal.Append("| ");
                 for (int n = 0; n < Rows && addr < mem_size; n++, addr++)
                 {
                     int c = mem_data[addr];
                     asciiVal.Append((c >= 32 && c < 128) ? Convert.ToChar(c) : '.');
                 }
+                var font = ImGuiController.DefaultFont;
+                ImGui.PushFont(font);
                 ImGui.TextUnformatted(asciiVal.ToString());  //use unformatted, so string can contain the '%' character
+                ImGui.PopFont();
             }
             //clipper.End();  //not implemented
             ImGui.PopStyleVar(2);
@@ -237,6 +244,24 @@ namespace MapStudio.UI
                 }
             }
             ImGui.PopItemWidth();
+        }
+
+        private void DrawHeader(int base_display_addr, float cell_width, int addr_digits_count)
+        {
+            var spacing = ImGui.CalcTextSize(FixedHex(base_display_addr + 0, Math.Max(addr_digits_count, 6)) + ": ").X;
+            ImGuiHelper.IncrementCursorPosX(spacing + 15);
+            float pos = ImGuiNative.igGetCursorPosX();
+
+            ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.TextDisabled]);
+            for (int column = 0; column < Rows; column++)
+            {
+                ImGui.SameLine(pos + cell_width * column);
+
+                ImGui.PushItemWidth(ImGui.CalcTextSize("FF").X);
+                ImGui.Text(FixedHex(column, 2));
+                ImGui.PopItemWidth();
+            }
+            ImGui.PopStyleColor();
         }
     }
 

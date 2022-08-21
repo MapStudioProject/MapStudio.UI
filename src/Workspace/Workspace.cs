@@ -355,6 +355,9 @@ namespace MapStudio.UI
             editor.Root.Header = fileFormat.FileInfo.FileName;
             editor.Root.Tag = fileFormat;
 
+            if (fileFormat is IArchiveFile)
+                ArchiveEditor.Load((IArchiveFile)fileFormat, editor.Root);
+
             //Add the file to the project resources
             Resources.AddFile(fileFormat);
 
@@ -585,6 +588,9 @@ namespace MapStudio.UI
             SaveEditorData(false);
 
             var file = ActiveEditor as IFileFormat;
+            if (file.FileInfo.ParentArchive != null)
+                file = file.FileInfo.ParentArchive as IFileFormat;
+
             string filePath = file.FileInfo.FilePath;
 
             //Save from project folder to working dir
@@ -611,6 +617,9 @@ namespace MapStudio.UI
 
         public void SaveFileWithDialog(IFileFormat fileFormat)
         {
+            if (fileFormat.FileInfo.ParentArchive != null)
+                fileFormat = fileFormat.FileInfo.ParentArchive as IFileFormat;
+
             ImguiFileDialog sfd = new ImguiFileDialog() { SaveDialog = true };
             sfd.FileName = fileFormat.FileInfo.FileName;
 

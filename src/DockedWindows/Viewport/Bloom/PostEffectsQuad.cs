@@ -106,9 +106,6 @@ namespace MapStudio.UI
         {
             Initialize(control);
 
-            GL.MatrixMode(MatrixMode.Modelview);
-            GL.LoadIdentity();
-
             control.CurrentShader = DefaultShaderProgram;
 
             DefaultShaderProgram.SetFloat("exposure", 1.0f);

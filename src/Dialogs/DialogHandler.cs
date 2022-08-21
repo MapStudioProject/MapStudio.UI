@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading.Tasks;
 using ImGuiNET;
-using System.Numerics;
 
 namespace MapStudio.UI
 {
@@ -99,15 +99,14 @@ namespace MapStudio.UI
         {
             ImGui.SetCursorPos(new Vector2(ImGui.GetWindowWidth() - 220, ImGui.GetWindowHeight() - 26));
             var size = new Vector2(width, height);
-            if (ImGui.Button("Cancel", size))
+            if (ImGui.Button("Cancel", size)) 
                 DialogHandler.ClosePopup(false);
-
+            
             ImGui.SameLine();
-            if (ImGui.Button("Ok", size))
+            if (ImGui.Button("Ok", size)) 
                 DialogHandler.ClosePopup(true);
-
+            
         }
-
         public static void ClosePopup(bool isOk)
         {
             DialogRender = null;

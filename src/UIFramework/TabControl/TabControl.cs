@@ -24,7 +24,7 @@ namespace MapStudio.UI
 
         public virtual void Render()
         {
-            //ImGuiHelper.ComboFromEnum< Mode>("Tab Mode", this, "TabMode");
+            ImGuiHelper.ComboFromEnum< Mode>("Tab Mode", this, "TabMode");
 
             switch (TabMode)
             {
@@ -100,15 +100,18 @@ namespace MapStudio.UI
 
             ImGui.EndColumns();
 
+            ImGui.Text("");
+
             foreach (var page in this.Pages)
             {
                 if (page.Visible && ImGui.CollapsingHeader(page.Name, ImGuiTreeNodeFlags.DefaultOpen))
                 {
-                    if (ImGui.BeginChild(ID + $"{page.Name}properties"))
+                    page.Render();
+
+                   /* if (ImGui.BeginChild(ID + $"{page.Name}properties"))
                     {
-                        page.Render();
                     }
-                    ImGui.EndChild();
+                    ImGui.EndChild();*/
                 }
             }
         }

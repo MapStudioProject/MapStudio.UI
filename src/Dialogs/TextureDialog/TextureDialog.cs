@@ -72,6 +72,11 @@ namespace MapStudio.UI
                 SupportedFormats.Add(defaultFormat);
         }
 
+        public void SetPlatform(IPlatformSwizzle platform)
+        {
+            PlatformSwizzle = platform;
+        }
+
         public void OnLoad() {
             DecodedTexture = GLTexture2D.CreateUncompressedTexture(1, 1);
         }

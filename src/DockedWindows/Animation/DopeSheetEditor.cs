@@ -266,7 +266,7 @@ namespace MapStudio.UI
                 data[index + 0] = color.X;
                 data[index + 1] = color.Y;
                 data[index + 2] = color.Z;
-                data[index + 3] = color.W;
+                data[index + 3] = 1;
                 index += 4;
             }
             colorNode.ColorSheet.Reload(width, height, data);

@@ -40,6 +40,8 @@ namespace MapStudio.UI
         public static ImFontPtr DefaultFont;
         public static ImFontPtr DefaultFontBold;
 
+        public static ImFontPtr FontOperator;
+
         /// <summary>
         /// Constructs a new ImGuiController.
         /// </summary>
@@ -104,6 +106,7 @@ namespace MapStudio.UI
                 (*nativeConfig).GlyphOffset = new System.Numerics.Vector2(0);
 
                 DefaultFontBold = io.Fonts.AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir,"Lib","Fonts","FontBold.ttf"), 16, nativeConfig);
+                FontOperator = io.Fonts.AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir, "Lib", "Fonts", "FontBold.ttf"), 40, nativeConfig);
             }
 
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
@@ -355,6 +358,7 @@ void main()
             foreach (Key key in Enum.GetValues(typeof(Key))) {
                 io.KeysDown[(int)key] = KeyboardState.IsKeyDown(key);
             }
+
             io.KeysDown[(int)ImGuiKey.Enter] = KeyboardState.IsKeyDown(Key.Enter);
 
             foreach (var c in PressedChars) {
@@ -366,6 +370,7 @@ void main()
             io.KeyAlt = KeyboardState.IsKeyDown(Key.AltLeft) || KeyboardState.IsKeyDown(Key.AltRight);
             io.KeyShift = KeyboardState.IsKeyDown(Key.ShiftLeft) || KeyboardState.IsKeyDown(Key.ShiftRight);
             io.KeySuper = KeyboardState.IsKeyDown(Key.WinLeft) || KeyboardState.IsKeyDown(Key.WinRight);
+
 
             PrevMouseState = MouseState;
             PrevKeyboardState = KeyboardState;

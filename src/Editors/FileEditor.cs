@@ -5,6 +5,8 @@ using GLFrameworkEngine;
 using Toolbox.Core.ViewModels;
 using OpenTK;
 using UIFramework;
+using ImGuiNET;
+using Toolbox.Core;
 
 namespace MapStudio.UI
 {
@@ -99,7 +101,41 @@ namespace MapStudio.UI
 
         public virtual void RenderSaveFileSettings()
         {
+            var fileFormat = this as IFileFormat;
+            if (fileFormat == null)
+                return;
 
+            if (fileFormat.FileInfo.ParentArchive != null)
+                fileFormat = fileFormat.FileInfo.ParentArchive as IFileFormat;
+
+            var comp = fileFormat.FileInfo.Compression == null ? "None" : fileFormat.FileInfo.Compression.ToString();
+            if (ImGui.BeginCombo("Compression", comp))
+            {
+                bool select = comp == "None";
+                if (ImGui.Selectable("None", select))
+                {
+                    fileFormat.FileInfo.Compression = null;
+                }
+                if (select)
+                    ImGui.SetItemDefaultFocus();
+
+                foreach (var compTypes in FileManager.GetCompressionFormats())
+                {
+                    select = comp == compTypes.ToString();
+                    if (ImGui.Selectable(compTypes.ToString(), select))
+                    {
+                        fileFormat.FileInfo.Compression = compTypes;
+                    }
+
+                    if (select)
+                        ImGui.SetItemDefaultFocus();
+                }
+                ImGui.EndCombo();
+            }
+            if (ImGui.DragInt("Yaz0 Level (1 fast, 9 slow)", ref Runtime.Yaz0CompressionLevel, 1, 1, 9))
+            {
+
+            }
         }
 
         /// <summary>

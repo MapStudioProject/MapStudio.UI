@@ -71,6 +71,10 @@ namespace MapStudio.UI
         {
             dialogKey = key;
 
+            string desc = "";
+            if (filters.Count > 0)
+                desc = $"{filters[0].Description} (*{filters[0].Extension})";
+
             if (!SelectedFilters.ContainsKey(key))
                 SelectedFilters.Add(key, 0);
 
