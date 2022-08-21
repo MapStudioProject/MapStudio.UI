@@ -37,25 +37,25 @@
     <ProjectReference Include="..\GLFrameworkEngine\GLFrameworkEngine.csproj" />
     <ProjectReference Include="..\Toolbox.Core\Toolbox.Core.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="CurveEditorLibrary">
-      <HintPath>..\Track Studio\Lib\CurveEditorLibrary.dll</HintPath>
+      <HintPath>Externals\CurveEditorLibrary.dll</HintPath>
     </Reference>
     <Reference Include="ImGui.NET">
-      <HintPath>..\Track Studio\Lib\ImGui.NET.dll</HintPath>
+      <HintPath>Externals\ImGui.NET.dll</HintPath>
     </Reference>
     <Reference Include="IONET">
-      <HintPath>..\Track Studio\Lib\IONET.dll</HintPath>
+      <HintPath>Externals\IONET.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK">
-      <HintPath>..\Track Studio\Lib\OpenTK.dll</HintPath>
+      <HintPath>Externals\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="Syroot.BinaryData">
-      <HintPath>..\Track Studio\Lib\Syroot.BinaryData.dll</HintPath>
+      <HintPath>Externals\Syroot.BinaryData.dll</HintPath>
     </Reference>
     <Reference Include="Syroot.Maths">
-      <HintPath>..\Track Studio\Lib\Syroot.Maths.dll</HintPath>
+      <HintPath>Externals\Syroot.Maths.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
