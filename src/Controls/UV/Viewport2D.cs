@@ -124,6 +124,9 @@ namespace MapStudio.UI
             FrameBuffer.Bind();
 
             GL.Viewport(0, 0, Width, Height);
+            GL.MatrixMode(MatrixMode.Projection);
+            GL.LoadIdentity();
+            GL.MatrixMode(MatrixMode.Modelview);
 
             if (UseOrtho)
             {

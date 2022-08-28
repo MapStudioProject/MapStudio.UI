@@ -55,7 +55,9 @@ namespace MapStudio.UI
                 DrawableUVMap.UpdateVertexBuffer(PolygonGroupIndex, UvChannelIndex, ActiveObjects, ActiveTextureMap);
                 UpdateVertexBuffer = false;
             }
-            DrawableUVMap.Draw(Camera, aspectScale);
+
+            if (DisplayUVs)
+                DrawableUVMap.Draw(Camera, aspectScale);
         }
 
         public void Reset() {

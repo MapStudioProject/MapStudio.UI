@@ -22,7 +22,7 @@ namespace MapStudio.UI
         public static void Init()
         {
             if (MeshDrawer == null)
-                MeshDrawer = new RenderMesh<Vector2>(new Vector2[0], PrimitiveType.LineLoop);
+                MeshDrawer = new RenderMesh<Vector2>(new Vector2[0], PrimitiveType.Lines);
         }
 
         public void Reset() {
