@@ -122,8 +122,9 @@ namespace MapStudio.UI
 
                 OnSelected += delegate  
                 {
-                    if (IsSelected)
-                        Workspace.ActiveWorkspace.ActiveEditor = FileInfo.ParentArchiveFile as FileEditor;
+                    //TODO this will work better when the file editor gets switched better for opened files
+                   // if (IsSelected)
+                        //Workspace.ActiveWorkspace.ActiveEditor = FileInfo.ParentArchiveFile as FileEditor;
                 };
                 OnHeaderRenamed += delegate
                 {

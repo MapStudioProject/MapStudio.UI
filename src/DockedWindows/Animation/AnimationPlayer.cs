@@ -80,6 +80,9 @@ namespace MapStudio.UI
 
         public void Reset(bool clearAnimations = true)
         {
+            foreach (var anim in CurrentAnimations)
+                anim.Reset();
+
             if (clearAnimations)
                 CurrentAnimations.Clear();
             StartFrame = 0;
@@ -89,6 +92,7 @@ namespace MapStudio.UI
             OnFrameChanged?.Invoke(this, EventArgs.Empty);
 
             ResetModels();
+            GLFrameworkEngine.GLContext.ActiveContext.UpdateViewport = true;
         }
 
         public void ResetModels()

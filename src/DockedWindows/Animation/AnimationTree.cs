@@ -84,6 +84,8 @@ namespace MapStudio.UI
 
             var editableAnim = anim as IEditableAnimation;
             TreeView.Nodes.Add(editableAnim.Root);
+
+            editableAnim.Root.IsExpanded = true;
         }
 
         public void Render() {
