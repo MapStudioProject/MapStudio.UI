@@ -193,7 +193,7 @@ namespace MapStudio.UI
         public void OnMouseWheel(MouseEventInfo e)
         {
             float delta = -(e.WheelPrecise - mouseWheelPrevious);
-            Camera.Zoom = Math.Max(7.0f, Camera.Zoom - delta * 3.5f);
+            Camera.Zoom = Math.Max(2, Camera.Zoom - delta * 3.5f);
             mouseWheelPrevious = e.WheelPrecise;
         }
     }

@@ -10,6 +10,7 @@ using System.Diagnostics;
 using GLFrameworkEngine;
 using OpenTK.Graphics.OpenGL;
 using SharpEXR;
+using System.Drawing.Drawing2D;
 
 namespace MapStudio.UI
 {
