@@ -158,7 +158,11 @@ namespace MapStudio.UI
             //-d to download. -i to install. Then boot the tool
             proc.StartInfo.Arguments = $"-i {bootCommand}";
             proc.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+            proc.StartInfo.UseShellExecute = true;//This should not block your program
+            proc.StartInfo.ErrorDialog = true;
+
             proc.Start();
+
             Environment.Exit(0);
         }
 
