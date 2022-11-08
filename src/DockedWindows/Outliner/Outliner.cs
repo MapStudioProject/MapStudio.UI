@@ -215,6 +215,12 @@ namespace MapStudio.UI
                 }
                 ImGui.EndMenuBar();
             }
+
+            if (ImGui.Checkbox("Add Files To Active Editor", ref GlobalSettings.Current.Program.UseSameWorkspace))
+            {
+
+            }
+
             //Set the same header colors as hovered and active. This makes nav scrolling more seamless looking
             var active = ImGui.GetStyle().Colors[(int)ImGuiCol.Header];
             ImGui.PushStyleColor(ImGuiCol.HeaderHovered, active);

@@ -217,6 +217,11 @@ namespace MapStudio.UI
             public float FontScale { get; set; } = 1.0f;
 
             /// <summary>
+            /// 
+            /// </summary>
+            public bool UseSameWorkspace = false;
+
+            /// <summary>
             /// Gets the current project directory.
             /// </summary>
             public string ProjectDirectory = DefaultProjectPath();
