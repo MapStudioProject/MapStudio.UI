@@ -13,8 +13,10 @@ namespace MapStudio.UI
         public static byte[] GetSourceInBytes(this Image<Rgba32> image)
         {
             var _IMemoryGroup = image.GetPixelMemoryGroup();
-            var _MemoryGroup = _IMemoryGroup.ToArray()[0];
-            return MemoryMarshal.AsBytes(_MemoryGroup.Span).ToArray();
+            var data = _IMemoryGroup.SelectMany(row => MemoryMarshal.AsBytes(row.Span).ToArray())
+                       .ToArray();
+
+            return data;
         }
     }
 }
