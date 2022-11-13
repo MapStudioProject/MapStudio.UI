@@ -357,7 +357,7 @@ namespace MapStudio.UI
             List<string> editorList = ParentWorkspace.ActiveEditor.SubEditors;
             string activeEditor = ParentWorkspace.ActiveEditor.SubEditor;
 
-           /* string text = $"{TranslationSource.GetText("EDITORS")} : [{TranslationSource.GetText(activeEditor)}]";
+            string text = $"{TranslationSource.GetText("EDITORS")} : [{TranslationSource.GetText(activeEditor)}]";
 
             ImGui.PushItemWidth(200);
             ImguiCustomWidgets.ComboScrollable<string>($"##editorMenu", text, ref activeEditor,
@@ -367,7 +367,7 @@ namespace MapStudio.UI
                     GLContext.ActiveContext.UpdateViewport = true;
                 }, ImGuiComboFlags.NoArrowButton | ImGuiComboFlags.HeightLargest);
             ImGui.PopItemWidth();
-            */
+            
 
             ImGui.SameLine();
 
