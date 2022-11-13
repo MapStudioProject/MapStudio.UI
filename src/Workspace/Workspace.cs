@@ -367,6 +367,9 @@ namespace MapStudio.UI
 
             SetupActiveEditor(editor);
 
+            //Add to viewport filter list
+            ViewportWindow.Pipeline.AddFile(editor, Path.GetFileNameWithoutExtension(filePath));
+
             StudioLogger.WriteLine(string.Format(TranslationSource.GetText("LOADING_FILE"), filePath));
 
             InitEditors(filePath);
@@ -406,8 +409,6 @@ namespace MapStudio.UI
                 if (o != null)
                     PropertyWindow.SelectedObject = (NodeBase)o;
             };
-            GLContext.ActiveContext.Scene = editor.Scene;
-
             //Set active file format
             editor.SetActive();
             //Update editor viewport menus

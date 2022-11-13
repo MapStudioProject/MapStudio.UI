@@ -16,8 +16,9 @@ namespace MapStudio.UI
         OrientationGizmo _orientationGizmo;
         DrawableBackground _background;
 
-        public List<IRenderableFile> Files = new List<IRenderableFile>();
         public List<CameraAnimation> CameraAnimations = new List<CameraAnimation>();
+
+        public List<FileScene> Files = new List<FileScene>();
 
         private bool isView2D;
 
@@ -148,13 +149,17 @@ namespace MapStudio.UI
             CameraAnimations.Add(animation);
         }
 
-        public void AddFile(IRenderableFile renderFile) {
-            Files.Add(renderFile);
-            _context.Scene.AddRenderObject(renderFile.Renderer);
-        }
+        public void AddFile(FileEditor editor, string name) 
+        {
+            //Only switch out render if models are present
+            editor.OnModelLoaded(this);
 
-        public void AddFile(IDrawable renderFile) {
-            _context.Scene.AddRenderObject(renderFile);
+            Files.Add(new FileScene()
+            {
+                Scene = editor.Scene,
+                Name = name,
+                Visible = true,
+            });
         }
 
         public Bitmap SaveAsScreenshot(Framebuffer outputBuffer, int width, int height, bool useAlpha = false)
@@ -367,13 +372,22 @@ namespace MapStudio.UI
 
         private void DrawSceneWithPostEffects()
         {
-            foreach (var file in _context.Scene.Objects)
-                if (file.IsVisible && file is EditableObject && ((EditableObject)file).UsePostEffects)
-                    file.DrawModel(_context, Pass.OPAQUE);
+            foreach (var file in Files)
+            {
+                if (!file.Visible)
+                    continue;
 
-            foreach (var file in _context.Scene.Objects)
-                if (file.IsVisible && file is EditableObject && ((EditableObject)file).UsePostEffects)
-                    file.DrawModel(_context, Pass.TRANSPARENT);
+                foreach (var ob in file.Scene.Objects)
+                {
+                    if (ob.IsVisible && ob is EditableObject && ((EditableObject)ob).UsePostEffects)
+                        ob.DrawModel(_context, Pass.OPAQUE);
+                }
+                foreach (var ob in file.Scene.Objects)
+                {
+                    if (ob.IsVisible && ob is EditableObject && ((EditableObject)ob).UsePostEffects)
+                        ob.DrawModel(_context, Pass.TRANSPARENT);
+                }
+            }
 
             ScreenBufferTexture.FilterScreen(_context);
 
@@ -386,19 +400,25 @@ namespace MapStudio.UI
 
         private void DrawSceneNoPostEffects()
         {
-            foreach (var file in _context.Scene.Objects)
+            foreach (var file in Files)
             {
-                if (!file.IsVisible || file is EditableObject && ((EditableObject)file).UsePostEffects)
+                if (!file.Visible)
                     continue;
 
-                file.DrawModel(_context, Pass.OPAQUE);
-            }
-            foreach (var file in _context.Scene.Objects)
-            {
-                if (!file.IsVisible || file is EditableObject && ((EditableObject)file).UsePostEffects)
-                    continue;
+                foreach (var ob in file.Scene.Objects)
+                {
+                    if (!ob.IsVisible || ob is EditableObject && ((EditableObject)ob).UsePostEffects)
+                        continue;
 
-                file.DrawModel(_context, Pass.TRANSPARENT);
+                    ob.DrawModel(_context, Pass.OPAQUE);
+                }
+                foreach (var ob in file.Scene.Objects)
+                {
+                    if (!ob.IsVisible || ob is EditableObject && ((EditableObject)ob).UsePostEffects)
+                        continue;
+
+                    ob.DrawModel(_context, Pass.TRANSPARENT);
+                }
             }
         }
 
@@ -462,6 +482,16 @@ namespace MapStudio.UI
         private void SetViewport()
         {
             _context.SetViewportSize();
+        }
+
+        /// <summary>
+        /// Represents scene toggle per file format to toggle from viewport.
+        /// </summary>
+        public class FileScene
+        {
+            public GLScene Scene;
+            public string Name;
+            public bool Visible;
         }
     }
 }

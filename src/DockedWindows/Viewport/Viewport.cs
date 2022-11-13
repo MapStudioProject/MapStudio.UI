@@ -24,6 +24,9 @@ namespace MapStudio.UI
 
         public List<MenuItemModel> ContextMenus = new List<MenuItemModel>();
 
+        public List<IDrawable> ModelList = new List<IDrawable>();
+        public IDrawable ActiveModel;
+
         public bool IsFocused => Viewports.Any(x => x.IsFocused);
 
         GlobalSettings GlobalSettings { get; set; }
@@ -103,6 +106,8 @@ namespace MapStudio.UI
 
         public void SetActive() {
             Pipeline._context.SetActive();
+            if (ActiveModel == null && ModelList.Count > 0)
+                ActiveModel = ModelList.FirstOrDefault();
         }
 
         public void Dispose()
@@ -185,6 +190,24 @@ namespace MapStudio.UI
 
                     ImGui.SameLine();
                     DrawCameraMenu();
+
+                    if (ActiveModel != null)
+                    {
+                        ImGui.SameLine();
+                        if (ImGui.BeginCombo("Model", ActiveModel.ToString()))
+                        {
+                            foreach (var model in ModelList)
+                            {
+                                if (ImGui.Selectable(model.ToString(), ActiveModel == model))
+                                {
+                                    ActiveModel = model;
+                                    foreach (var m in ModelList)
+                                        m.IsVisible = ActiveModel == m ? true : false;
+                                }
+                            }
+                            ImGui.EndCombo();
+                        }
+                    }
 
                     ImGui.SameLine();
                     DrawEditorMenu();
@@ -334,7 +357,7 @@ namespace MapStudio.UI
             List<string> editorList = ParentWorkspace.ActiveEditor.SubEditors;
             string activeEditor = ParentWorkspace.ActiveEditor.SubEditor;
 
-            string text = $"{TranslationSource.GetText("EDITORS")} : [{TranslationSource.GetText(activeEditor)}]";
+           /* string text = $"{TranslationSource.GetText("EDITORS")} : [{TranslationSource.GetText(activeEditor)}]";
 
             ImGui.PushItemWidth(200);
             ImguiCustomWidgets.ComboScrollable<string>($"##editorMenu", text, ref activeEditor,
@@ -343,6 +366,25 @@ namespace MapStudio.UI
                     Workspace.ActiveWorkspace.ActiveEditor.SubEditor = activeEditor;
                     GLContext.ActiveContext.UpdateViewport = true;
                 }, ImGuiComboFlags.NoArrowButton | ImGuiComboFlags.HeightLargest);
+            ImGui.PopItemWidth();
+            */
+
+            ImGui.SameLine();
+
+            ImGui.PushItemWidth(150);
+
+            if (ImGui.BeginCombo("##Renderers", "Renderers"))
+            {
+                foreach (var file in Pipeline.Files)
+                {
+                    if (ImGui.Checkbox($"Visible##{file.Name}", ref file.Visible))
+                        GLContext.ActiveContext.UpdateViewport = true;
+                    ImGui.SameLine();
+                    ImGui.Text(file.Name);
+                }
+
+                ImGui.EndCombo();
+            }
             ImGui.PopItemWidth();
         }
 

@@ -231,6 +231,7 @@ namespace MapStudio.UI
                 foreach (var child in editor.Root.Children)
                     this.Children.Add(child);
 
+                Workspace.ActiveWorkspace.ViewportWindow.Pipeline.AddFile(editor, this.Header);
                 Workspace.ActiveWorkspace.ActiveEditor = editor;
             }
 

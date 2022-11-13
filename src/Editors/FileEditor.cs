@@ -20,6 +20,8 @@ namespace MapStudio.UI
 
         public virtual Action RenderNewFileDialog { get; }
 
+        public virtual bool DisplayViewport => true;
+
         private string subEditor = "Default";
 
         /// <summary>
@@ -37,6 +39,16 @@ namespace MapStudio.UI
                     ReloadSubEditor();
                 }
             }
+        }
+
+        /// <summary>
+        /// Occurs when the file is being loaded into the viewer.
+        /// </summary>
+        public virtual void OnModelLoaded(ViewportRenderer viewport)
+        {
+            //Only switch out render if models are present
+            foreach (var file in viewport.Files)
+                file.Visible = false;
         }
 
         /// <summary>
