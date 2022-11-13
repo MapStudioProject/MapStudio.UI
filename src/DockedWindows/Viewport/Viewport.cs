@@ -377,10 +377,8 @@ namespace MapStudio.UI
             {
                 foreach (var file in Pipeline.Files)
                 {
-                    if (ImGui.Checkbox($"Visible##{file.Name}", ref file.Visible))
+                    if (ImGui.Checkbox($"{file.Name}##{file.Name}", ref file.Visible))
                         GLContext.ActiveContext.UpdateViewport = true;
-                    ImGui.SameLine();
-                    ImGui.Text(file.Name);
                 }
 
                 ImGui.EndCombo();

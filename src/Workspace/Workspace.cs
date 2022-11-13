@@ -368,7 +368,8 @@ namespace MapStudio.UI
             SetupActiveEditor(editor);
 
             //Add to viewport filter list
-            ViewportWindow.Pipeline.AddFile(editor, Path.GetFileNameWithoutExtension(filePath));
+            if (!(fileFormat is IArchiveFile))
+                ViewportWindow.Pipeline.AddFile(editor, Path.GetFileNameWithoutExtension(filePath));
 
             StudioLogger.WriteLine(string.Format(TranslationSource.GetText("LOADING_FILE"), filePath));
 
