@@ -156,7 +156,7 @@ namespace MapStudio.UI
 
             Files.Add(new FileScene()
             {
-                Scene = editor.Scene,
+                Editor = editor,
                 Name = name,
                 Visible = true,
             });
@@ -377,12 +377,12 @@ namespace MapStudio.UI
                 if (!file.Visible)
                     continue;
 
-                foreach (var ob in file.Scene.Objects)
+                foreach (var ob in file.Editor.Scene.Objects)
                 {
                     if (ob.IsVisible && ob is EditableObject && ((EditableObject)ob).UsePostEffects)
                         ob.DrawModel(_context, Pass.OPAQUE);
                 }
-                foreach (var ob in file.Scene.Objects)
+                foreach (var ob in file.Editor.Scene.Objects)
                 {
                     if (ob.IsVisible && ob is EditableObject && ((EditableObject)ob).UsePostEffects)
                         ob.DrawModel(_context, Pass.TRANSPARENT);
@@ -405,14 +405,14 @@ namespace MapStudio.UI
                 if (!file.Visible)
                     continue;
 
-                foreach (var ob in file.Scene.Objects)
+                foreach (var ob in file.Editor.Scene.Objects)
                 {
                     if (!ob.IsVisible || ob is EditableObject && ((EditableObject)ob).UsePostEffects)
                         continue;
 
                     ob.DrawModel(_context, Pass.OPAQUE);
                 }
-                foreach (var ob in file.Scene.Objects)
+                foreach (var ob in file.Editor.Scene.Objects)
                 {
                     if (!ob.IsVisible || ob is EditableObject && ((EditableObject)ob).UsePostEffects)
                         continue;
@@ -489,7 +489,7 @@ namespace MapStudio.UI
         /// </summary>
         public class FileScene
         {
-            public GLScene Scene;
+            public FileEditor Editor;
             public string Name;
             public bool Visible;
         }
