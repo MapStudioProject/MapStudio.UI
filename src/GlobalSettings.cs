@@ -268,6 +268,11 @@ namespace MapStudio.UI
             /// Toggles displaying bloom in the 3D view.
             /// </summary>
             public bool DisplayBloom { get; set; } = false;
+
+            /// <summary>
+            /// Toggles displaying bones over models.
+            /// </summary>
+            public bool BoneXRay { get; set; } = false;
         }
 
         public class AssetSettings

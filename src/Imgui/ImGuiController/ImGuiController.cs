@@ -41,6 +41,8 @@ namespace MapStudio.UI
         public static ImFontPtr DefaultFontBold;
 
         public static ImFontPtr FontOperator;
+        public static ImFontPtr FontIconSolid;
+        public static ImFontPtr FontIconRegular;
 
         /// <summary>
         /// Constructs a new ImGuiController.
@@ -86,10 +88,10 @@ namespace MapStudio.UI
             float fontSize = 16.0f;
 
             AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir,"Lib","Fonts","OpenFontIcons.ttf"), fontSize, config, new[] { min, max, (char)0 });
-            AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir,"Lib","Fonts","fa-solid-900.ttf"), fontSize, config, new[] { (char)0xe005, (char)0xf8ff, (char)0 });
-            AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir,"Lib","Fonts","fa-regular-400.ttf"), fontSize, config, new[] { (char)0xe005, (char)0xf8ff, (char)0 });
+            FontIconSolid = AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir,"Lib","Fonts","fa-solid-900.ttf"), fontSize, config, new[] { (char)0xe005, (char)0xf8ff, (char)0 });
+            FontIconRegular = AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir,"Lib","Fonts","fa-regular-400.ttf"), fontSize, config, new[] { (char)0xe005, (char)0xf8ff, (char)0 });
 
-            //Font needs a slight shift.
+            //Font needs a slig ht shift.
             config.GlyphMinAdvanceX = 12;
             AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir,"Lib","Fonts","NotoSansCJKjp-Medium.otf"), fontSize, config, io.Fonts.GetGlyphRangesJapanese());
 
@@ -120,7 +122,7 @@ namespace MapStudio.UI
             _frameBegun = true;
         }
 
-        public static void AddFontFromFileTTF(string filename,
+        public static ImFontPtr AddFontFromFileTTF(string filename,
          float sizePixels,
          ImFontConfig config,
          char[] glyphRanges)
@@ -129,12 +131,12 @@ namespace MapStudio.UI
             {
                 fixed (char* glyphs = &glyphRanges[0])
                 {
-                    AddFontFromFileTTF(filename, sizePixels, config, (IntPtr)glyphs);
+                   return AddFontFromFileTTF(filename, sizePixels, config, (IntPtr)glyphs);
                 }
             }
         }
 
-        public static void AddFontFromFileTTF(string filename,
+        public static ImFontPtr AddFontFromFileTTF(string filename,
      float sizePixels,
      ImFontConfig config,
     IntPtr glyphRanges)
@@ -146,7 +148,7 @@ namespace MapStudio.UI
 
             unsafe
             {
-                io.Fonts.AddFontFromFileTTF(filename, sizePixels, &config, glyphRanges);
+               return io.Fonts.AddFontFromFileTTF(filename, sizePixels, &config, glyphRanges);
             }
         }
 
