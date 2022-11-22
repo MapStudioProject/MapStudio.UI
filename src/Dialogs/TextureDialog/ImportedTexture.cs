@@ -149,7 +149,10 @@ namespace MapStudio.UI
 
         public ImportedTexture(string fileName) {
             FilePath = fileName;
-            Name = Path.GetFileNameWithoutExtension(fileName);
+            //Remove extension. Fix for keeping . in filenames
+            string ext = fileName.Split(".").LastOrDefault();
+            Name = fileName.Replace(ext, "");
+
             Format = TexFormat.BC1_SRGB;
 
             Surfaces.Add(new Surface(fileName));
