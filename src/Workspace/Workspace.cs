@@ -432,6 +432,8 @@ namespace MapStudio.UI
                 //Add to project files for saving project data.
                 Resources.AddFile((IFileFormat)ActiveEditor);
             }
+            ViewportWindow.Pipeline.AddFile(ActiveEditor, "NewProject");
+
             //Editors can have an optional dialog before creating new files.
             if (ActiveEditor.RenderNewFileDialog != null)
             {
