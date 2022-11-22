@@ -151,7 +151,7 @@ namespace MapStudio.UI
             FilePath = fileName;
             //Remove extension. Fix for keeping . in filenames
             string ext = fileName.Split(".").LastOrDefault();
-            Name = fileName.Replace(ext, "");
+            Name = fileName.Replace($".{ext}", "");
 
             Format = TexFormat.BC1_SRGB;
 
