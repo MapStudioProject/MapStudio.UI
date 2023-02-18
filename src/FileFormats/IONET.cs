@@ -11,12 +11,13 @@ using Toolbox.Core;
 using GLFrameworkEngine;
 using Toolbox.Core.ViewModels;
 using UIFramework;
+using IONET.Collada.FX.Rendering;
 
 namespace MapStudio.UI
 {
     public class IoNetFile : FileEditor, IFileFormat, IModelSceneFormat
     {
-        public bool CanSave { get; set; } = false;
+        public bool CanSave { get; set; } = true;
 
         public string[] Description { get; set; } = new string[] { "DAE" };
         public string[] Extension { get; set; } = new string[] { "*.dae" };
@@ -34,6 +35,8 @@ namespace MapStudio.UI
         public IOScene IOScene;
 
         public STGenericScene Scene;
+
+        List<GenericModelRender> Renders = new List<GenericModelRender>();
 
         public void Load(Stream stream)
         {
@@ -60,10 +63,12 @@ namespace MapStudio.UI
                 animFolder.AddChild(animNode);
             }
 
+            Renders.Clear();
             foreach (var model in Scene.Models)
             {
                 var modelRender = new GenericModelRender(model);
                 this.AddRender(modelRender);
+                Renders.Add(modelRender);
 
                 var roots = CreateBoneTree(model.Skeleton);
                 foreach (var bone in roots)
@@ -103,14 +108,26 @@ namespace MapStudio.UI
         }
 
         public void Save(Stream stream) {
+            stream.Dispose();
+
             Export(Scene, FileInfo.FilePath);
         }
 
         public STGenericScene ToGeneric() => StudioConversion.ToGeneric(IOScene);
 
-        public static void Export(STGenericScene genericScene, string filePath)
+        public void Export(STGenericScene genericScene, string filePath)
         {
            var scene = StudioConversion.FromGeneric(genericScene);
+            for (int i = 0; i < scene.Models.Count; i++)
+            {
+                for (int j = 0; j < scene.Models[i].Meshes.Count; j++)
+                {
+                    var mesh = scene.Models[i].Meshes[j];
+                    var transform = Renders[i].Transform.TransformMatrix * Renders[i].Meshes[j].Transform.TransformMatrix;
+                    mesh.TransformVertices(Matrix4Extension.ToNumerics(transform));
+                }
+            }
+
             IOManager.ExportScene(scene, filePath, new ExportSettings()
             {
                 BlenderMode = true,

@@ -635,6 +635,8 @@ namespace MapStudio.UI
 
         private void SaveFileData(IFileFormat fileFormat, string filePath)
         {
+            fileFormat.FileInfo.FilePath = filePath;
+
             //Apply editor data
             SaveEditorData(false);
 
