@@ -12,6 +12,7 @@ using GLFrameworkEngine;
 using Toolbox.Core.ViewModels;
 using UIFramework;
 using IONET.Collada.FX.Rendering;
+using Collada141;
 
 namespace MapStudio.UI
 {
@@ -38,29 +39,64 @@ namespace MapStudio.UI
 
         List<GenericModelRender> Renders = new List<GenericModelRender>();
 
+        NodeBase skeletonFolder = new NodeBase("Skeleton");
+        NodeBase meshFolder = new NodeBase("Meshes");
+        NodeBase matFolder = new NodeBase("Materials");
+        NodeBase texFolder = new NodeBase("Textures");
+        NodeBase animFolder = new NodeBase("Animations");
+
         public void Load(Stream stream)
         {
             stream?.Dispose();
 
             IOScene = IOManager.LoadScene(FileInfo.FilePath, new ImportSettings());
-
             Scene = ToGeneric();
-
-            NodeBase skeletonFolder = new NodeBase("Skeleton");
-            NodeBase meshFolder = new NodeBase("Meshes");
-            NodeBase texFolder = new NodeBase("Textures");
-            NodeBase animFolder = new NodeBase("Animations");
-
+            
             Root.AddChild(meshFolder);
+            Root.AddChild(matFolder);
             Root.AddChild(skeletonFolder);
             Root.AddChild(texFolder);
             Root.AddChild(animFolder);
 
+            Root.ContextMenus.Add(new MenuItemModel("Add Model", AddModel));
+            matFolder.ContextMenus.Add(new MenuItemModel("Remove Duplicate Materials", RemoveDuplicateMaterials));
+            ReloadScene();
+        }
+
+        private void ReloadScene()
+        {
+            meshFolder.Children.Clear();
+            texFolder.Children.Clear();
+            meshFolder.Children.Clear();
+
+            Renders.Clear();
             foreach (var animation in Scene.Animations)
             {
                 NodeBase animNode = new NodeBase(animation.Name);
                 animNode.Tag = animation;
                 animFolder.AddChild(animNode);
+            }
+
+            foreach (var mat in IOScene.Materials)
+            {
+                NodeBase matNode = new NodeBase(mat.Name);
+                matNode.Icon = IconManager.MODEL_ICON.ToString();
+                matNode.Tag = mat;
+                matFolder.AddChild(matNode);
+                matNode.CanRename = true;
+                matNode.OnHeaderRenamed += delegate
+                {
+                    //Get assigned polys
+                    var polys = GetAssignedPolygons(mat);
+                    //Assign with new name
+                    AssignMaterial(polys, matNode.Header);
+                    //Apply new name
+                    mat.Name = matNode.Header;
+                };
+                matNode.ContextMenus.Add(new MenuItemModel("Rename", () =>
+                {
+                    matNode.ActivateRename = true;
+                }));
             }
 
             Renders.Clear();
@@ -77,10 +113,98 @@ namespace MapStudio.UI
                 foreach (var meshRender in modelRender.Meshes)
                     meshFolder.AddChild(meshRender.UINode);
 
-                foreach (var texture in model.Textures) {
+                foreach (var texture in model.Textures)
+                {
                     texFolder.AddChild(new NodeBase(texture.Name) { Tag = texture });
                 }
             }
+        }
+
+        private void AddModel()
+        {
+            ImguiFileDialog dlg = new ImguiFileDialog();
+            dlg.AddFilter(".dae", "DAE");
+            dlg.MultiSelect = true;
+            if (dlg.ShowDialog())
+            {
+                foreach (var file in dlg.FilePaths)
+                    AddModel(file);
+            }
+        }
+
+        private void AddModel(string filePath)
+        {
+            var scene = IOManager.LoadScene(filePath, new ImportSettings());
+            foreach (var mat in scene.Materials)
+                if (!IOScene.Materials.Any(x => x.Name == mat.Name))
+                    IOScene.Materials.Add(mat);
+
+            foreach (var model in scene.Models)
+                IOScene.Models.Add(model);
+
+            Scene = ToGeneric();
+
+            foreach (var render in this.Renders)
+                this.RemoveRender(render);
+
+            ReloadScene();
+        }
+
+        private void RemoveDuplicateMaterials()
+        {
+            Dictionary<string, string> materialMaps = new Dictionary<string, string>();
+            List<string> duplicateMaterials = new List<string>();
+
+            var materialList = IOScene.Materials.ToList();
+            foreach (var mat in materialList)
+            {
+                string key = mat.DiffuseMap?.Name;
+                //Material with existing key
+                if (materialMaps.ContainsKey(key))
+                {
+                    //Get material assigned 
+                    string name = materialMaps[key];
+                    //Get all polygons assigned to this material
+                    var polys = GetAssignedPolygons(mat);
+                    //Update and assign new material
+                    AssignMaterial(polys, name);
+                    //Remove material from scene
+                    IOScene.Materials.Remove(mat);
+                    //Remove from gui
+                    var nodeUI = matFolder.Children.FirstOrDefault(x => x.Header == mat.Name);
+                    if (nodeUI != null)
+                        matFolder.Children.Remove(nodeUI);
+
+                    duplicateMaterials.Add(mat.Name);
+                }
+                else
+                    materialMaps.Add(key, mat.Name);
+            }
+
+            StudioLogger.WriteLine($"Removed {duplicateMaterials.Count} materials! {string.Join('\n', duplicateMaterials)}");
+        }
+
+        private void AssignMaterial(List<IOPolygon> polygons, string material)
+        {
+            foreach (var p in polygons)
+                p.MaterialName = material;
+        }
+
+        private List<IOPolygon> GetAssignedPolygons(IOMaterial material)
+        {
+            List<IOPolygon> polygons = new List<IOPolygon>();
+            foreach (var model in IOScene.Models)
+            {
+                foreach (var mesh in model.Meshes)
+                {
+                    foreach (var p in mesh.Polygons)
+                    {
+                        if (p.MaterialName == material.Name)
+                            polygons.Add(p);
+                    }
+                }
+            }
+            return polygons;
         }
 
         public override List<DockWindow> PrepareDocks()
