@@ -63,7 +63,7 @@ namespace MapStudio.UI
 
         public void TakeScreenshot()
         {
-            var screenshot = SaveAsScreenshot(1920 * 4, 1080 * 4, false);
+            var screenshot = SaveAsScreenshot(1920 * 2, 1080 * 2, false);
             ImguiFileDialog dlg = new ImguiFileDialog();
             dlg.SaveDialog = true;
             dlg.FileName = DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
