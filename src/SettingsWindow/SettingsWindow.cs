@@ -90,6 +90,12 @@ namespace MapStudio.UI
                 ImGui.GetIO().FontGlobalScale = Settings.Program.FontScale;
                 Settings.Save();
             }
+            if (ImGui.CollapsingHeader("Viewport Settings", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                ImGuiHelper.InputFromInt("Screenshot Width", Settings.Viewer, "ScreenshotWidth");
+                ImGuiHelper.InputFromInt("Screenshot Height", Settings.Viewer, "ScreenshotHeight");
+                ImGuiHelper.InputFromBoolean("Save Screenshot Alpha", Settings.Viewer, "ScreenshotAlpha");
+            }
         }
 
         private void DrawLanguageSettings()

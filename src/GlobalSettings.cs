@@ -275,7 +275,7 @@ namespace MapStudio.UI
             public bool BoneXRay { get; set; } = false;
 
             public int ScreenshotWidth { get; set; } = 1920 * 2;
-            public int ScreenshotHeight { get; set; } = 1920 * 2;
+            public int ScreenshotHeight { get; set; } = 1080 * 2;
             public bool ScreenshotAlpha { get; set; } = false;
         }
 
