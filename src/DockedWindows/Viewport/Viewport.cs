@@ -61,6 +61,19 @@ namespace MapStudio.UI
             ReloadMenus();
         }
 
+        public void TakeScreenshot()
+        {
+            var screenshot = SaveAsScreenshot(1920 * 4, 1080 * 4, false);
+            ImguiFileDialog dlg = new ImguiFileDialog();
+            dlg.SaveDialog = true;
+            dlg.FileName = DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
+            dlg.AddFilter(".png", "PNG");
+            if (dlg.ShowDialog())
+            {
+                screenshot.Save(dlg.FilePath);
+            }
+        }
+
         public GLTexture2D SaveAsScreenshotGLTexture(int width, int height)
         {
             return Viewports[0].SaveAsScreenshotGLTexture(Pipeline, width, height, true);
@@ -636,7 +649,7 @@ namespace MapStudio.UI
                 }, "STOP"));
             menus.Add(new MenuItemModel($"{IconManager.UNDO_ICON}", () => Pipeline._context.Scene.Undo(), "UNDO"));
             menus.Add(new MenuItemModel($"{IconManager.REDO_ICON}", () => Pipeline._context.Scene.Redo(), "REDO"));
-          //  menus.Add(new MenuItemModel($"{IconManager.CAMERA_ICON}", TakeScreenshot, "SCREENSHOT"));
+            menus.Add(new MenuItemModel($"{IconManager.CAMERA_ICON}", TakeScreenshot, "SCREENSHOT"));
 
             menus.Add(new MenuItemModel(""));
             menus.Add(new MenuItemModel($"{IconManager.ARROW_ICON}", EnterSelectionMode, "SELECT", isSelectionMode));
