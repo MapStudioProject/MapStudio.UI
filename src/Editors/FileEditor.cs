@@ -7,6 +7,7 @@ using OpenTK;
 using UIFramework;
 using ImGuiNET;
 using Toolbox.Core;
+using System.Linq;
 
 namespace MapStudio.UI
 {
@@ -83,6 +84,14 @@ namespace MapStudio.UI
         {
             Workspace.ViewportWindow.Pipeline._context.Scene = Scene;
             GLContext.ActiveContext.UpdateViewport = true;
+
+            var file = Workspace.ViewportWindow.Pipeline.Files.FirstOrDefault(x => x.Scene == Scene);
+            if (file != null)
+            {
+                //Only switch out render if models are present
+                OnModelLoaded(Workspace.ViewportWindow.Pipeline);
+                file.Visible = true;
+            }
         }
 
         public virtual void DrawMainMenuBar()

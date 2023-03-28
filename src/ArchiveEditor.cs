@@ -15,6 +15,26 @@ namespace MapStudio.UI
             CreateObjectHiearchy(root, file);
         }
 
+        public static void ReloadTree(IArchiveFile file, NodeBase root)
+        {
+             foreach (var node in root.Children)
+            {
+                if (node is FileNode)
+                    ReloadFileNode(file, node as FileNode);
+                else
+                    ReloadTree(file, node);
+            }
+        }
+
+        static void ReloadFileNode(IArchiveFile file, FileNode node)
+        {
+            foreach (var f in file.Files)
+            {
+                if (f.FileName == node.FullPath)
+                    node.Reload(f);
+            }
+        }
+
         static NodeBase CreateObjectHiearchy(NodeBase parent, IArchiveFile archiveFile)
         {
             // build a TreeNode collection from the file list
@@ -74,14 +94,14 @@ namespace MapStudio.UI
             }
         }
 
-        class FileNode : NodeBase
+        class FileNode : NodeBase, IPropertyUI
         {
-            MemoryEditor MemoryEditor = new MemoryEditor();
-
             /// <summary>
             /// The attached file information from an archive file.
             /// </summary>
             private ArchiveFileInfo FileInfo;
+
+            public string FullPath => FileInfo.FileName;
 
             public FileNode(string name, ArchiveFileInfo fileInfo) : base(name)
             {
@@ -130,6 +150,14 @@ namespace MapStudio.UI
                 {
                     FileInfo.FileName = GetFullPath(this);
                 };
+            }
+
+            public void Reload(ArchiveFileInfo fileInfo)
+            {
+                if (FileInfo != null && FileInfo.FileFormat != null)
+                    fileInfo.FileFormat = FileInfo.FileFormat;
+
+                FileInfo = fileInfo;
             }
 
             private static string GetFullPath(NodeBase node)
@@ -225,7 +253,11 @@ namespace MapStudio.UI
                 editor.Scene.Init();
 
                 this.Tag = FileInfo.FileFormat;
+                this.TagUI = new NodePropertyUI();
                 this.TagUI.Tag = editor.Root.TagUI;
+
+                if (FileInfo.FileFormat is IArchiveFile)
+                    ArchiveEditor.Load((IArchiveFile)FileInfo.FileFormat, editor.Root);
 
                 this.Children.Clear();
                 foreach (var child in editor.Root.Children)
@@ -248,8 +280,40 @@ namespace MapStudio.UI
 
             private void RenderHexView()
             {
+                //Dumb hack atm. Don't display data when over 10mb
                 byte[] data = FileInfo.AsBytes();
-                MemoryEditor.Draw(data, data.Length);
+            }
+
+            public Type GetTypeUI()
+            {
+                return typeof(HexWindow);
+            }
+
+            public void OnLoadUI(object uiInstance)
+            {
+                ((HexWindow)uiInstance).Load(FileInfo);
+            }
+
+            public void OnRenderUI(object uiInstance)
+            {
+                ((HexWindow)uiInstance).Render();
+            }
+        }
+
+        class HexWindow
+        {
+            MemoryEditor MemoryEditor = new MemoryEditor();
+
+            private byte[] Data;
+
+            public void Load(ArchiveFileInfo file)
+            {
+                Data = file.AsBytes();
+            }
+
+            public void Render()
+            {
+                MemoryEditor.Draw(Data, Data.Length);
             }
         }
     }

@@ -12,6 +12,7 @@ using OpenTK;
 using Toolbox.Core;
 using Toolbox.Core.Animations;
 using UIFramework;
+using static Toolbox.Core.Runtime;
 
 namespace MapStudio.UI
 {
@@ -592,6 +593,9 @@ namespace MapStudio.UI
             SaveEditorData(false);
 
             var file = ActiveEditor as IFileFormat;
+            //Check if in archive and if in another archive. Temp, should loop for however many necesssary
+            if (file.FileInfo.ParentArchive != null)
+                file = file.FileInfo.ParentArchive as IFileFormat;
             if (file.FileInfo.ParentArchive != null)
                 file = file.FileInfo.ParentArchive as IFileFormat;
 
@@ -655,6 +659,18 @@ namespace MapStudio.UI
                 Toolbox.Core.IO.STFileSaver.SaveFileFormat(fileFormat, filePath, (o, s) => {
                     ProcessLoading.Instance.Update(70, 100, $"Compressing {fileFormat.FileInfo.Compression.ToString()}", "Saving");
                 });
+                //Reload the file if an archive with an open stream
+                if (fileFormat is IArchiveFile && fileFormat.FileInfo.KeepOpen)
+                {
+                    var editor = fileFormat as FileEditor;
+                    var originalTree = editor.Root;
+                    foreach (var node in editor.Root.Children)
+                    {
+
+                    }
+                    editor.Root.Tag = fileFormat;
+                    ArchiveEditor.ReloadTree((IArchiveFile)fileFormat, editor.Root);
+                }
             }
             catch (Exception ex)
             {
