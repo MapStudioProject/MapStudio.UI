@@ -296,7 +296,8 @@ namespace MapStudio.UI
 
             public void OnRenderUI(object uiInstance)
             {
-                ((HexWindow)uiInstance).Render();
+                if (this.FileInfo.FileFormat == null)
+                    ((HexWindow)uiInstance).Render();
             }
         }
 
@@ -306,14 +307,18 @@ namespace MapStudio.UI
 
             private byte[] Data;
 
+            private ArchiveFileInfo File;
+
             public void Load(ArchiveFileInfo file)
             {
                 Data = file.AsBytes();
+                File = file;
             }
 
             public void Render()
             {
-                MemoryEditor.Draw(Data, Data.Length);
+                if (Data != null)
+                    MemoryEditor.Draw(Data, Data.Length);
             }
         }
     }

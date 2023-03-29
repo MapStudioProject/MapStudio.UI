@@ -17,8 +17,9 @@ namespace MapStudio.UI
         NodeBase ActiveNode = null;
 
         private object ActiveEditor = null;
+        private object ActiveTagEditor = null;
 
-       public PropertyWindow(DockSpaceWindow parent) : base(parent)
+        public PropertyWindow(DockSpaceWindow parent) : base(parent)
         {
 
         }
@@ -66,15 +67,15 @@ namespace MapStudio.UI
             if (obj is IPropertyUI)
             {
                 var propertyUI = (IPropertyUI)obj;
-                if (ActiveEditor == null || ActiveEditor.GetType() != propertyUI.GetTypeUI())
+                if (ActiveTagEditor == null || ActiveTagEditor.GetType() != propertyUI.GetTypeUI())
                 {
                     var instance = Activator.CreateInstance(propertyUI.GetTypeUI());
-                    ActiveEditor = instance;
+                    ActiveTagEditor = instance;
                 }
                 if (valueChanged)
-                    propertyUI.OnLoadUI(ActiveEditor);
+                    propertyUI.OnLoadUI(ActiveTagEditor);
 
-                propertyUI.OnRenderUI(ActiveEditor);
+                propertyUI.OnRenderUI(ActiveTagEditor);
             }
             if (obj is Toolbox.Core.STGenericTexture) {
                 ImageEditor.LoadEditor((Toolbox.Core.STGenericTexture)obj);
