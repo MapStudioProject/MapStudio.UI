@@ -13,6 +13,7 @@ using Toolbox.Core;
 using Toolbox.Core.Animations;
 using UIFramework;
 using static Toolbox.Core.Runtime;
+using SixLabors.ImageSharp;
 
 namespace MapStudio.UI
 {
@@ -705,7 +706,7 @@ namespace MapStudio.UI
             Resources.SaveProject(Path.Combine(folderPath,"Project.json"), ViewportWindow.Pipeline._context, this);
             //Save the thumbnail in the current view
             var thumb = ViewportWindow.SaveAsScreenshot(720, 512);
-            thumb.Save(Path.Combine(folderPath,"Thumbnail.png"));
+            thumb.SaveAsPng(Path.Combine(folderPath,"Thumbnail.png"));
 
             //Update icon cache for thumbnails used
             IconManager.LoadTextureFile(Path.Combine(folderPath,"Thumbnail.png"), 64, 64, true);

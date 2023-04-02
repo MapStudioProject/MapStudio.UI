@@ -4,6 +4,8 @@ using System.Text;
 using GLFrameworkEngine;
 using ImGuiNET;
 using OpenTK.Graphics.OpenGL;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
 
 namespace MapStudio.UI
 {
@@ -212,7 +214,7 @@ namespace MapStudio.UI
             return GLTexture2D.FromBitmap(bitmap);
         }
 
-        public System.Drawing.Bitmap SaveAsScreenshot(ViewportRenderer renderer, int width, int height, bool enableAlpha = false) {
+        public Image<Rgba32> SaveAsScreenshot(ViewportRenderer renderer, int width, int height, bool enableAlpha = false) {
             //Save into an fbo that supports an alpha channel
             Framebuffer fbo = new Framebuffer(FramebufferTarget.Framebuffer,
              1, 1, PixelInternalFormat.Rgba16f, 1);
