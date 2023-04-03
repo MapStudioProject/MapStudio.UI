@@ -22,7 +22,7 @@ namespace MapStudio.UI
         public int Width { get; set; }
         public int Height { get; set; }
 
-        private System.Drawing.Point originMouse { get; set; }
+        private GLFrameworkEngine.Point originMouse { get; set; }
 
         public Camera2D Camera = new Camera2D();
 
@@ -88,7 +88,7 @@ namespace MapStudio.UI
         private void OnEnter()
         {
             var mouseInfo = ImGuiHelper.CreateMouseState();
-            originMouse = new System.Drawing.Point(mouseInfo.X, mouseInfo.Y);
+            originMouse = new GLFrameworkEngine.Point(mouseInfo.X, mouseInfo.Y);
             mouseWheelPrevious = mouseInfo.WheelPrecise;
         }
 
