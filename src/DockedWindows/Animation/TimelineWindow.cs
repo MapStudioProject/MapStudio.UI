@@ -58,6 +58,8 @@ namespace MapStudio.UI
             this.Opened = true;
         }
 
+        public void Stop() => AnimationPlayer.Stop();
+
         public void ResetAnimations()
         {
             AnimationPlayer.CurrentAnimations.Clear();

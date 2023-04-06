@@ -119,6 +119,8 @@ namespace MapStudio.UI
             AnimationPlayer.SetFrame(frame);
         }
 
+        public void Stop() { AnimationPlayer.Stop(); }
+
         public void Reset()
         {
             CurveEditor.CurrentFrame = 0;

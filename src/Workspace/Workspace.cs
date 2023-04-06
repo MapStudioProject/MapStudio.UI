@@ -332,6 +332,10 @@ namespace MapStudio.UI
 
             IFileFormat fileFormat = null;
 
+
+#if (DEBUG)
+            fileFormat = Toolbox.Core.IO.STFileLoader.OpenFileFormat(filePath);
+#else
             try
             {
                 fileFormat = Toolbox.Core.IO.STFileLoader.OpenFileFormat(filePath);
@@ -340,6 +344,7 @@ namespace MapStudio.UI
             {
                 DialogHandler.ShowException(ex);
             }
+#endif
 
             var editor = fileFormat as FileEditor;
             if (fileFormat == null)
@@ -492,6 +497,9 @@ namespace MapStudio.UI
             if (ActiveWorkspace == workspace)
                 return;
 
+            if (ActiveWorkspace != null)
+                ActiveWorkspace.OnWindowUnloaded();
+
             ActiveWorkspace = workspace;
             //Update error logger on switch
             workspace.PrintErrors();
@@ -503,6 +511,12 @@ namespace MapStudio.UI
         public void OnWindowLoaded()
         {
             ViewportWindow.SetActive();
+        }
+
+        public void OnWindowUnloaded()
+        {
+            this.TimelineWindow.Stop();
+            this.GraphWindow.Stop();
         }
 
         /// <summary>
