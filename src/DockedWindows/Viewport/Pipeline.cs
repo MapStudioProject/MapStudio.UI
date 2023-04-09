@@ -114,7 +114,8 @@ namespace MapStudio.UI
             //color pass + selection highlight pass
             ScreenBuffer.SetDrawBuffers(
              DrawBuffersEnum.ColorAttachment0, 
-             DrawBuffersEnum.ColorAttachment0); //We will use masking to determine when to show/hide selection alpha mask of color 0
+             DrawBuffersEnum.ColorAttachment1); //We will use masking to determine when to show/hide selection alpha mask of color 0
+
 
             PostEffects = new Framebuffer(FramebufferTarget.Framebuffer,
                  Width, Height, PixelInternalFormat.Rgba16f, 2);

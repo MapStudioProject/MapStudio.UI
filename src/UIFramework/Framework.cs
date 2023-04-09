@@ -24,8 +24,7 @@ namespace UIFramework
             string name = "TRACK_STUDIO", int width = 1600, int height = 900) : base(width, height, gMode,
                              TranslationSource.GetText(name),
                              GameWindowFlags.Default,
-                             DisplayDevice.Default,
-                             3, 2, GraphicsContextFlags.Default)
+                             DisplayDevice.Default)
         {
             MainWindow = window;
             window.Init(this);
