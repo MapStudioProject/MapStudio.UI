@@ -25,6 +25,8 @@ namespace MapStudio.UI
         AnimationTimelineControl CurveEditor { get; set; }
         AnimationTree AnimationHierarchy { get; set; }
         DopeSheetEditor DopeSheet;
+        AnimCurveEditor AnimCurveEditor;
+
         public AnimationProperties PropertyWindow;
 
         public bool IsEditorDopeSheet = true;
@@ -70,6 +72,7 @@ namespace MapStudio.UI
                     ActiveAnimation.FrameCount = CurveEditor.FrameCount;
             };
             DopeSheet = new DopeSheetEditor(CurveEditor, AnimationHierarchy);
+            AnimCurveEditor = new AnimCurveEditor(CurveEditor, AnimationHierarchy);
             AnimationHierarchy.OnValueUpdated += delegate
             {
                 AnimationPlayer.SetFrame(AnimationPlayer.CurrentFrame);
@@ -87,6 +90,7 @@ namespace MapStudio.UI
                     updateTimelineRender = true;
                 }
             };
+            CurveEditor.ValueEditor = false;
 
             //Dock settings
             this.DockDirection = ImGuiDir.Down;
@@ -119,6 +123,8 @@ namespace MapStudio.UI
             AnimationPlayer.SetFrame(frame);
         }
 
+        public void Update() { updateTimelineRender = true; }
+
         public void Stop() { AnimationPlayer.Stop(); }
 
         public void Reset()
@@ -137,6 +143,7 @@ namespace MapStudio.UI
             AnimationPlayer.AddAnimation(animation, "", reset);
 
             DopeSheet.Reset();
+            AnimCurveEditor.Reset();
             AnimationHierarchy.Load(new List<STAnimation>() { animation });
             //Todo, high frame counts can cause freeze issues atm
             CurveEditor.SetFrameRange(AnimationPlayer.FrameCount, 10);
@@ -311,12 +318,20 @@ namespace MapStudio.UI
             }
 
             if (DrawButton("Dope Sheet", IsEditorDopeSheet))
+            {
                 IsEditorDopeSheet = true;
+                CurveEditor.ValueEditor = false;
+                updateTimelineRender = true;
+            }
 
             ImGui.SameLine();
 
             if (DrawButton("Curve Editor", !IsEditorDopeSheet))
-                IsEditorDopeSheet = false; 
+            {
+                IsEditorDopeSheet = false;
+                CurveEditor.ValueEditor = true;
+                updateTimelineRender = true;
+            }
         }
 
         private void DrawProperties()
@@ -478,12 +493,19 @@ namespace MapStudio.UI
             CurveEditor.DrawText();
             ImGui.SetCursorPos(pos);
 
-            DopeSheet.Render();
+            if (IsEditorDopeSheet)
+                DopeSheet.Render();
+            else
+                AnimCurveEditor.Render();
         }
 
         public void OnKeyDown(GLFrameworkEngine.KeyEventInfo state)
         {
-            DopeSheet.OnKeyDown(state);
+            if (IsEditorDopeSheet)
+                DopeSheet.OnKeyDown(state);
+            else
+                AnimCurveEditor.OnKeyDown(state);
+
         }
 
         private float previousMouseWheel;
@@ -497,14 +519,21 @@ namespace MapStudio.UI
 
             if (onEnter)
             {
-                DopeSheet.ResetMouse(mouseInfo);
+                if (IsEditorDopeSheet)
+                    DopeSheet.ResetMouse(mouseInfo);
+                else
+                    AnimCurveEditor.ResetMouse(mouseInfo);
+
                 CurveEditor.ResetMouse(mouseInfo);
                 onEnter = false;
             }
 
             if (ImGui.IsAnyMouseDown() && !_mouseDown)
             {
-                DopeSheet.OnMouseDown(mouseInfo);
+                if (IsEditorDopeSheet)
+                    DopeSheet.OnMouseDown(mouseInfo);
+                else
+                    AnimCurveEditor.OnMouseDown(mouseInfo);
                 CurveEditor.OnMouseDown(mouseInfo);
                 previousMouseWheel = 0;
                 _mouseDown = true;
@@ -514,7 +543,11 @@ namespace MapStudio.UI
                ImGui.IsMouseReleased(ImGuiMouseButton.Right) ||
                ImGui.IsMouseReleased(ImGuiMouseButton.Middle))
             {
-                DopeSheet.OnMouseUp(mouseInfo);
+                if (IsEditorDopeSheet)
+                    DopeSheet.OnMouseUp(mouseInfo);
+                else
+                    AnimCurveEditor.OnMouseUp(mouseInfo);
+
                 CurveEditor.OnMouseUp(mouseInfo);
                 _mouseDown = false;
             }
@@ -527,7 +560,11 @@ namespace MapStudio.UI
 
             //  if (_mouseDown)
             CurveEditor.OnMouseMove(mouseInfo);
-            DopeSheet.OnMouseMove(mouseInfo);
+
+            if (IsEditorDopeSheet)
+                DopeSheet.OnMouseMove(mouseInfo);
+            else
+                AnimCurveEditor.OnMouseMove(mouseInfo);
 
             CurveEditor.OnMouseWheel(mouseInfo, controlDown, shiftDown);
 

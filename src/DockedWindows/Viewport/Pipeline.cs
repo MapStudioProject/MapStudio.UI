@@ -7,6 +7,7 @@ using OpenTK.Input;
 using GLFrameworkEngine;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp;
+using System.Reflection;
 
 namespace MapStudio.UI
 {
@@ -44,6 +45,8 @@ namespace MapStudio.UI
                // OnResize();
             }
         }
+
+        public ISceneRender SceneRenderOverride;
 
         public int Width { get; set; }
         public int Height { get; set; }
@@ -225,7 +228,12 @@ namespace MapStudio.UI
 
             ResourceTracker.ResetStats();
 
-            DrawModels();
+            if (SceneRenderOverride != null)
+            {
+                SceneRenderOverride.Render(_context, ScreenBuffer);
+            }
+            else
+                DrawModels();
 
             //Transfer the screen buffer to the post effects buffer (screen buffer is multi sampled)
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, ScreenBuffer.ID);
@@ -328,6 +336,8 @@ namespace MapStudio.UI
             _context.Camera.Width = this.Width;
             _context.Camera.Height = this.Height;
             _context.Camera.UpdateMatrices();
+
+            this.SceneRenderOverride?.Resize(Width, Height);
         }
 
         public ITransformableObject GetPickedObject(MouseEventInfo e)

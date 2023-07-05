@@ -545,6 +545,40 @@ namespace MapStudio.UI
                 set { KeyFrame.Frame = value; }
             }
 
+            /// <summary>
+            /// Current frame of the key.
+            /// </summary>
+            public float Value
+            {
+                get { return KeyFrame.Value; }
+                set { KeyFrame.Value = value; }
+            }
+
+            /// <summary>
+            /// Current frame of the key.
+            /// </summary>
+            public float SlopeIn
+            {
+                get { return KeyFrame is STHermiteKeyFrame ? ((STHermiteKeyFrame)KeyFrame).TangentIn : 0.0f; }
+                set { 
+                    if (KeyFrame is STHermiteKeyFrame)
+                        ((STHermiteKeyFrame)KeyFrame).TangentIn = value;
+                }
+            }
+
+            /// <summary>
+            /// Current frame of the key.
+            /// </summary>
+            public float SlopeOut
+            {
+                get { return KeyFrame is STHermiteKeyFrame ? ((STHermiteKeyFrame)KeyFrame).TangentOut : 0.0f; }
+                set 
+                {
+                    if (KeyFrame is STHermiteKeyFrame)
+                        ((STHermiteKeyFrame)KeyFrame).TangentOut = value;
+                }
+            }
+
             //Min/max UI element size
             public Vector2 Max = new Vector2();
             public Vector2 Min = new Vector2();
@@ -559,6 +593,8 @@ namespace MapStudio.UI
             /// Determines if the key node is selected or not.
             /// </summary>
             public bool IsSelected { get; set; }
+            public bool IsTangentInSelected { get; set; }
+            public bool IsTangentOutSelected { get; set; }
 
             //parent track node
             private TrackNode TrackNode;

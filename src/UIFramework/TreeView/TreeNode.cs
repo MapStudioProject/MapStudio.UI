@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using MapStudio.UI;
 using Toolbox.Core;
+using System.IO;
 
 namespace UIFramework
 {
@@ -235,6 +236,14 @@ namespace UIFramework
             ReloadID();
             //add events for lists
             this.Children.CollectionChanged += children_CollectionChanged;
+        }
+
+        public string GetPath(string parent = "")
+        {
+            if (this.Parent != null)
+                return Path.Combine(Parent.GetPath(this.Header), this.Header);
+
+            return this.Header;
         }
 
         private void ReloadID() {

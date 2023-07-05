@@ -668,24 +668,26 @@ namespace MapStudio.UI
             ProcessLoading.Instance.IsLoading = true;
             ProcessLoading.Instance.Update(0,100, $"Saving {name}", "Saving");
 
+            //Save current file
+            Toolbox.Core.IO.STFileSaver.SaveFileFormat(fileFormat, filePath, (o, s) => {
+                ProcessLoading.Instance.Update(70, 100, $"Compressing {fileFormat.FileInfo.Compression.ToString()}", "Saving");
+            });
+            //Reload the file if an archive with an open stream
+            if (fileFormat is IArchiveFile && fileFormat.FileInfo.KeepOpen)
+            {
+                var editor = fileFormat as FileEditor;
+                var originalTree = editor.Root;
+                foreach (var node in editor.Root.Children)
+                {
+
+                }
+                editor.Root.Tag = fileFormat;
+                ArchiveEditor.ReloadTree((IArchiveFile)fileFormat, editor.Root);
+            }
+
             try
             {
-                //Save current file
-                Toolbox.Core.IO.STFileSaver.SaveFileFormat(fileFormat, filePath, (o, s) => {
-                    ProcessLoading.Instance.Update(70, 100, $"Compressing {fileFormat.FileInfo.Compression.ToString()}", "Saving");
-                });
-                //Reload the file if an archive with an open stream
-                if (fileFormat is IArchiveFile && fileFormat.FileInfo.KeepOpen)
-                {
-                    var editor = fileFormat as FileEditor;
-                    var originalTree = editor.Root;
-                    foreach (var node in editor.Root.Children)
-                    {
-
-                    }
-                    editor.Root.Tag = fileFormat;
-                    ArchiveEditor.ReloadTree((IArchiveFile)fileFormat, editor.Root);
-                }
+              
             }
             catch (Exception ex)
             {
