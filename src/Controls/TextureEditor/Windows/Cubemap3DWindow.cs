@@ -61,7 +61,7 @@ namespace MapStudio.UI
             Draw();
 
             var tex = (GLTexture)Framebuffer.Attachments[0];
-            ImGui.Image(tex.ID, new System.Numerics.Vector2(size.X, size.Y - 28),
+            ImGui.Image((IntPtr)tex.ID, new System.Numerics.Vector2(size.X, size.Y - 28),
                 new System.Numerics.Vector2(0, 1),
                 new System.Numerics.Vector2(1, 0));
         }

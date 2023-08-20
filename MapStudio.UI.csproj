@@ -34,12 +34,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Documents\GitHub\CTR-Studio\CurveEditorLibraryCore\CurveEditorLibrary.csproj" />
     <ProjectReference Include="..\GLFrameworkEngine\GLFrameworkEngine.csproj" />
     <ProjectReference Include="..\Toolbox.Core\Toolbox.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="CurveEditorLibrary">
+      <HintPath>Externals\CurveEditorLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="ImGui.NET">
       <HintPath>Externals\ImGui.NET.dll</HintPath>
     </Reference>
