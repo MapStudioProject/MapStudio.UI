@@ -102,6 +102,11 @@ namespace MapStudio.UI
         /// <summary>
         /// 
         /// </summary>
+        public STSurfaceType SurfaceType = STSurfaceType.Texture2D;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public int ActiveArrayIndex = 0;
 
         /// <summary>

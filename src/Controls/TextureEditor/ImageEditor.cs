@@ -373,15 +373,12 @@ namespace MapStudio.UI
 
             if (ImGui.BeginPopupContextItem("##OUTLINER_POPUP", ImGuiPopupFlags.MouseButtonRight))
             {
-                if (ImGui.MenuItem("Copy"))
+                if (ImGui.MenuItem("Open In Default Program"))
                 {
-                    var texture = ActiveTexture.RenderableTex as GLTexture;
-                    var source = texture.GetBytes(0);
-                    Clipboard.CopyImage(source, texture.Width, texture.Height);
-                }
-                if (ImGui.MenuItem("Paste"))
-                {
+                    EditDefaultProgram = new ImageEditorDefaultProgram(
+                              ActiveTexture, currentArrayLevel, currentMipLevel);
 
+                    EditDefaultProgram.Start();
                 }
                 ImGui.EndPopup();
             }
