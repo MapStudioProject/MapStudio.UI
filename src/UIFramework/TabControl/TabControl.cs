@@ -13,6 +13,8 @@ namespace MapStudio.UI
 
         public uint VerticalTabWidth = 150;
 
+        public bool HideModeToggle = false;
+
         public Mode TabMode { get; set; } = Mode.Vertical_Tabs;
 
         private string ID;
@@ -24,7 +26,8 @@ namespace MapStudio.UI
 
         public virtual void Render()
         {
-            ImGuiHelper.ComboFromEnum< Mode>("Tab Mode", this, "TabMode");
+            if (!HideModeToggle)
+                ImGuiHelper.ComboFromEnum<Mode>("Tab Mode", this, "TabMode");
 
             switch (TabMode)
             {

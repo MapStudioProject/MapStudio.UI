@@ -264,7 +264,6 @@ namespace MapStudio.UI
             var input = obj.GetType().GetProperty(properyName);
             var vec = (Vector4)input.GetValue(obj);
 
-            float size = ImGui.GetFontSize();
             if (ImGui.ColorEdit4(label, ref vec, flags))
             {
                 input.SetValue(obj, vec);
@@ -325,7 +324,7 @@ namespace MapStudio.UI
 
             bool edited = false;
             if (drag)
-                edited = ImGui.DragFloat4(label, ref vec, 0.1f);
+                edited = ImGui.DragFloat4(label, ref vec, 0.1f, 1, 1, "%f", ImGuiSliderFlags.NoRoundToFormat);
             else
                 edited = ImGui.InputFloat4(label, ref vec);
 

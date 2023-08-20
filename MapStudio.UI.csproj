@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Platforms>AnyCPU;x86</Platforms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>MapStudioUI</AssemblyName>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks> 
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -26,24 +26,28 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net.Webhook" Version="3.3.2" />
+    <PackageReference Include="NativeFileDialogs.Net" Version="1.0.0" />
+    <PackageReference Include="NativeFileDialogSharp" Version="0.5.0" />
     <PackageReference Include="Octokit" Version="0.50.0" />
     <PackageReference Include="SharpEXR" Version="1.0.0.19" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+    <PackageReference Include="Vanara.PInvoke.Shell32" Version="3.4.16" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Documents\GitHub\CTR-Studio\CurveEditorLibraryCore\CurveEditorLibrary.csproj" />
     <ProjectReference Include="..\GLFrameworkEngine\GLFrameworkEngine.csproj" />
     <ProjectReference Include="..\Toolbox.Core\Toolbox.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="CurveEditorLibrary">
-      <HintPath>Externals\CurveEditorLibrary.dll</HintPath>
-    </Reference>
     <Reference Include="ImGui.NET">
       <HintPath>Externals\ImGui.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="ImGuiColorTextEditNet">
+      <HintPath>..\Track Studio\Lib\ImGuiColorTextEditNet.dll</HintPath>
     </Reference>
     <Reference Include="IONET">
       <HintPath>Externals\IONET.dll</HintPath>

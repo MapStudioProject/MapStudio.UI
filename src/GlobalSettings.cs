@@ -50,9 +50,19 @@ namespace MapStudio.UI
         public GridSettings Grid { get; set; } = new GridSettings();
 
         /// <summary>
+        /// 
+        /// </summary>
+        public BatchRenderingTool BatchTool { get; set; } = new BatchRenderingTool();
+
+        /// <summary>
         /// The global 3d viewer bone settings.
         /// </summary>
         public BoneSettings Bones { get; set; } = new BoneSettings();
+
+        /// <summary>
+        /// Settings for image editor
+        /// </summary>
+        public ImageEditorSettings ImageEditor { get; set; } = new ImageEditorSettings();
 
         public List<DockSettings> DockedWindows = new List<DockSettings>();
 
@@ -255,6 +265,14 @@ namespace MapStudio.UI
                 SplitRatio = ratio;
                 ParentWindow = parentWindow;
             }
+        }
+
+        public class BatchRenderingTool
+        {
+            public string InputFolder = "";
+            public string OutputFolder = "Batch";
+            public int ImageWidth = 512;
+            public int ImageHeight = 512;
         }
 
         public class ViewerSettings

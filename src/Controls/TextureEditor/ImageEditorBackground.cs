@@ -7,6 +7,7 @@ using Toolbox.Core;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
 using GLFrameworkEngine;
+using ImGuiNET;
 
 namespace MapStudio.UI
 {
@@ -56,7 +57,47 @@ namespace MapStudio.UI
 
             DrawBackground(shader);
 
-            cameraMtx = camera.ViewMatrix * camera.ProjectionMatrix;
+            if (ImageEditor.Settings.Zoom)
+                cameraMtx = camera.ViewMatrix * camera.ProjectionMatrix;
+            else
+            {
+                cameraMtx = Matrix4.Identity;
+
+                var size = new System.Numerics.Vector2(width, height);
+
+                //Aspect size
+
+                #region Calculate Aspect Size
+                float tw, th, tx, ty;
+
+                int w = (int)texture.Width;
+                int h = (int)texture.Height;
+
+                double whRatio = (double)w / h;
+                if (texture.Width >= texture.Height)
+                {
+                    tw = size.X;
+                    th = (int)(tw / whRatio);
+                    if (th > size.Y)
+                    {
+                        th = size.Y;
+                        tw = (int)(th * whRatio);
+                    }
+                }
+                else
+                {
+                    th = size.Y;
+                    tw = (int)(th * whRatio);
+                }
+
+                tx = (size.X - tw) / 2;
+                ty = (size.Y - th) / 2;
+
+                #endregion
+
+                scale = new Vector3(tw / size.X, th/ size.Y, 1);
+            }
+
             shader.SetMatrix4x4("mtxCam", ref cameraMtx);
 
             DrawImage(shader, texture, scale.Xy);
@@ -77,19 +118,39 @@ namespace MapStudio.UI
             shader.SetVector4("uColor", new Vector4(1));
             shader.SetBoolToInt("isSRGB", texture.IsSRGB);
             shader.SetBoolToInt("isBC5S", texture.Platform.OutputFormat == TexFormat.BC5_SNORM);
-            shader.SetBoolToInt("displayAlpha", ImageEditor.DisplayAlpha || ImageEditor.SelectedChannelIndex == 3);
+            shader.SetBoolToInt("displayAlpha", ImageEditor.Settings.DisplayAlpha || ImageEditor.SelectedChannelIndex == 3);
             shader.SetVector2("texCoordScale", new Vector2(1));
             shader.SetFloat("width", texture.Width);
             shader.SetFloat("height", texture.Height);
             shader.SetInt("currentMipLevel", ImageEditor.currentMipLevel);
+            shader.SetInt("currentArrayLevel", ImageEditor.currentArrayLevel);
+
             if (ImageEditor.SelectedChannelIndex != -1)
                 shader.SetInt("channelSelector", ImageEditor.SelectedChannelIndex);
 
-            GL.ActiveTexture(TextureUnit.Texture1);
-            BindTexture(texture);
-            shader.SetInt("textureInput", 1);
+            //Determine what texture to display by type
+            if (texture.RenderableTex is GLTextureCube)
+            {
+                GL.ActiveTexture(TextureUnit.Texture3);
+                BindTexture(texture);   
+                shader.SetInt("textureCubeInput", 3);
+                shader.SetInt("textureType", 2);
+            }
+            else if (texture.RenderableTex is GLTexture2DArray)
+            {
+                GL.ActiveTexture(TextureUnit.Texture2);
+                BindTexture(texture);
+                shader.SetInt("textureArrayInput", 2);
+                shader.SetInt("textureType", 1);
+            }
+            else
+            {
+                GL.ActiveTexture(TextureUnit.Texture1);
+                BindTexture(texture);
+                shader.SetInt("textureInput", 1);
+                shader.SetInt("textureType", 0);
+            }
             shader.SetInt("hasTexture", 1);
-
 
             //Draw background
             QuadDrawer.Draw(shader);
@@ -104,8 +165,15 @@ namespace MapStudio.UI
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             shader.SetInt("backgroundTexture", 1);
-            shader.SetInt("backgroundMode", (int)ImageEditor.SelectedBackground);
+            shader.SetInt("backgroundMode", (int)ImageEditor.Settings.SelectedBackground);
             shader.SetVector4("backgroundColor", new Vector4(1));
+            if (ImageEditor.Settings.SelectedBackground == ImageEditorSettings.BackgroundType.Custom)
+            shader.SetVector4("backgroundColor", new Vector4(
+                ImageEditor.Settings.BackgroundColor.X, 
+                ImageEditor.Settings.BackgroundColor.Y, 
+                ImageEditor.Settings.BackgroundColor.Z,
+                ImageEditor.Settings.BackgroundColor.W));
+
             shader.SetInt("hasTexture", 0);
             shader.SetVector2("scale", new Vector2(30));
             shader.SetVector2("texCoordScale", new Vector2(30));
@@ -143,15 +211,22 @@ namespace MapStudio.UI
             var target = ((GLTexture)tex.RenderableTex).Target;
             var texID = tex.RenderableTex.ID;
 
-            //Fixed mip layer with nearest setting
             GL.BindTexture(target, texID);
-            GL.TexParameter(target, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.NearestMipmapNearest);
+
+            //Fixed mip layer with nearest setting
+            //Only use mipmaps if used in rendered texture
+            if (tex.MipCount > 1)
+                GL.TexParameter(target, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.NearestMipmapNearest);
+            else
+                GL.TexParameter(target, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+
             GL.TexParameter(target, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             GL.TexParameter(target, TextureParameterName.TextureMaxLod, (int)15);
             GL.TexParameter(target, TextureParameterName.TextureMinLod, 0);
 
+            //RGBA channel swizzles
             int[] mask = new int[4] { (int)All.Red, (int)All.Green, (int)All.Blue, (int)All.Alpha };
-            if (ImageEditor.UseChannelComponents)
+            if (ImageEditor.Settings.UseChannelComponents)
             {
                 mask = new int[4]
                 {

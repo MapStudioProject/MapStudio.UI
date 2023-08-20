@@ -23,8 +23,7 @@ namespace UIFramework
         public Framework(MainWindow window, GraphicsMode gMode, string asssemblyVersion,
             string name = "TRACK_STUDIO", int width = 1600, int height = 900) : base(width, height, gMode,
                              TranslationSource.GetText(name),
-                             GameWindowFlags.Default,
-                             DisplayDevice.Default)
+                             GameWindowFlags.Default)
         {
             MainWindow = window;
             window.Init(this);

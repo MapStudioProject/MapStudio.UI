@@ -206,7 +206,7 @@ namespace MapStudio.UI
         {
             //Save into an fbo that supports an alpha channel
             Framebuffer fbo = new Framebuffer(FramebufferTarget.Framebuffer,
-             1, 1, PixelInternalFormat.Rgba16f, 1);
+             width, height, PixelInternalFormat.Rgba16f, 1);
 
             var bitmap = renderer.SaveAsScreenshot(fbo, width, height, enableAlpha);
             fbo.Dispose();
@@ -217,7 +217,7 @@ namespace MapStudio.UI
         public Image<Rgba32> SaveAsScreenshot(ViewportRenderer renderer, int width, int height, bool enableAlpha = false) {
             //Save into an fbo that supports an alpha channel
             Framebuffer fbo = new Framebuffer(FramebufferTarget.Framebuffer,
-             1, 1, PixelInternalFormat.Rgba16f, 1);
+             width, height, PixelInternalFormat.Rgba16f, 1);
 
             var bitmap = renderer.SaveAsScreenshot(fbo, width, height, enableAlpha);
             fbo.Dispose();

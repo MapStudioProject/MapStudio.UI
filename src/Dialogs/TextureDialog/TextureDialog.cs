@@ -240,7 +240,6 @@ namespace MapStudio.UI
                     th = size.Y;
                     tw = (int)(th * whRatio);
                 }
-
                 //Rectangle placement
                 tx = (size.X - tw) / 2;
                 ty = (size.Y - th) / 2;

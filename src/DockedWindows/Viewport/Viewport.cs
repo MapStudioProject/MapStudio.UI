@@ -65,10 +65,14 @@ namespace MapStudio.UI
 
         public void TakeScreenshot()
         {
+            GlobalSettings.Viewer.ScreenshotWidth = Math.Min(GlobalSettings.Viewer.ScreenshotWidth, 1920);
+            GlobalSettings.Viewer.ScreenshotHeight = Math.Min(GlobalSettings.Viewer.ScreenshotHeight, 1080);
+
             var screenshot = SaveAsScreenshot(
                 GlobalSettings.Viewer.ScreenshotWidth,
                 GlobalSettings.Viewer.ScreenshotHeight, 
                 GlobalSettings.Viewer.ScreenshotAlpha);
+
 
             ImguiFileDialog dlg = new ImguiFileDialog();
             dlg.SaveDialog = true;

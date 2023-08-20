@@ -35,9 +35,21 @@ namespace MapStudio.UI
             var cameraMtx = camera.ViewMatrix * camera.ProjectionMatrix;
             shader.SetMatrix4x4("mtxCam", ref cameraMtx);
 
-            GL.ActiveTexture(TextureUnit.Texture1);
-            BindTexture(texture, textureMap);
-            shader.SetInt("uvTexture", 1);
+            if (texture .RenderTexture is GLTexture2DArray)
+            {
+                GL.ActiveTexture(TextureUnit.Texture2);
+                BindTexture(texture, textureMap);
+                shader.SetInt("uvTextureArray", 2);
+                shader.SetInt("textureType", 1);
+            }
+            else
+            {
+                GL.ActiveTexture(TextureUnit.Texture1);
+                BindTexture(texture, textureMap);
+                shader.SetInt("uvTexture", 1);
+                shader.SetInt("textureType", 0);
+            }
+
             shader.SetInt("hasTexture", 1);
             shader.SetVector2("scale", bgscale * aspectScale);
             shader.SetVector2("texCoordScale", bgscale);

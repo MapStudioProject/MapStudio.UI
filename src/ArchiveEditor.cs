@@ -129,13 +129,7 @@ namespace MapStudio.UI
                     RenderHexView();
                 };
                 ContextMenus.Add(new MenuItemModel("Rename", () => {
-                    if (FileInfo.FileFormat != null)
-                    {
-                        var editor = FileInfo.FileFormat as FileEditor;
-                        editor.Root.ActivateRename = true;
-                    }
-                    else
-                        ActivateRename = true;
+                    ActivateRename = true;
                 })
                 { IsEnabled = fileInfo.ParentArchiveFile.CanRenameFiles });
 
@@ -156,6 +150,9 @@ namespace MapStudio.UI
                 {
                     FileInfo.FileName = GetFullPath(this);
                 };
+
+                if (FileInfo.OpenFileFormatOnLoad && FileInfo.FileFormat == null)
+                    OpenFile();
             }
 
             public void Reload(ArchiveFileInfo fileInfo)
@@ -240,16 +237,7 @@ namespace MapStudio.UI
                     return;
 
                 FileInfo.ParentArchiveFile.DeleteFile(FileInfo);
-
-                if (FileInfo.FileFormat != null)
-                {
-                    var editor = FileInfo.FileFormat as FileEditor;
-                    this.Parent.Children.Remove(editor.Root);
-                    if (editor is IDisposable)
-                        ((IDisposable)editor).Dispose();
-                }
-                else
-                    this.Parent.Children.Remove(this);
+                this.Parent.Children.Remove(this);
             }
 
             public override void OnDoubleClicked()
@@ -267,36 +255,16 @@ namespace MapStudio.UI
                 var editor = FileInfo.FileFormat as FileEditor;
                 editor.Scene.Init();
 
-                editor.Root.Header = this.Header;
-                editor.Root.Icon = this.Icon;
-                editor.Root.IconColor = this.IconColor;
-                editor.Root.CanRename = this.CanRename;
-
                 this.Tag = FileInfo.FileFormat;
                 this.TagUI = new NodePropertyUI();
                 this.TagUI.Tag = editor.Root.TagUI;
 
-                var parent = this.Parent;
-                var children = parent.Children;
-
-                //Insert the loaded file node and swap the current archive node
-                var index = children.IndexOf(this);
-                children.RemoveAt(index);
-                children.Insert(index, editor.Root);
-
-                //Insert all the archive menus into the root node but as first menu
-                var archiveNode = new MenuItemModel("Archive");
-                archiveNode.MenuItems.AddRange(this.ContextMenus);
-                editor.Root.ContextMenus.Insert(0, archiveNode);
-
-                editor.Root.OnHeaderRenamed += delegate
-                {
-                    this.Header = editor.Root.Header;
-                };
-
-                //Load as archive file if needed
                 if (FileInfo.FileFormat is IArchiveFile)
                     ArchiveEditor.Load((IArchiveFile)FileInfo.FileFormat, editor.Root);
+
+                this.Children.Clear();
+                foreach (var child in editor.Root.Children)
+                    this.Children.Add(child);
 
                 Workspace.ActiveWorkspace.ViewportWindow.Pipeline.AddFile(editor, this.Header);
                 Workspace.ActiveWorkspace.ActiveEditor = editor;

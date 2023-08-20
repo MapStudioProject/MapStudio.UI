@@ -10,7 +10,6 @@ using OpenTK.Input;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using UIFramework;
-using Discord;
 
 namespace MapStudio.UI
 {
@@ -731,11 +730,7 @@ namespace MapStudio.UI
                     }
                     //Double click event
                     if (leftDoubleClicked && !isToggleOpened && node.IsSelected) {
-
-                        UIManager.ActionExecBeforeUIDraw = () =>
-                        {
-                            node.OnDoubleClicked();
-                        };
+                        node.OnDoubleClicked();
                     }
 
                     //Update the active file format when selected. (updates dockspace layout and file menus)

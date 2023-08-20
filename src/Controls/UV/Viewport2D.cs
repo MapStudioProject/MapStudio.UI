@@ -78,9 +78,13 @@ namespace MapStudio.UI
                 onEnter = false;
 
             RenderEditor();
-            var id = GetViewportTexture();
+            DrawImage();
+        }
 
-            ImGui.Image((IntPtr)id, new System.Numerics.Vector2(width, height));
+        public virtual void DrawImage()
+        {
+            var id = GetViewportTexture();
+            ImGui.Image((IntPtr)id, new System.Numerics.Vector2(Width, Height));
         }
 
         private bool _mouseDown;

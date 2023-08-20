@@ -46,8 +46,6 @@ namespace MapStudio.UI
             }
         }
 
-        public ISceneRender SceneRenderOverride;
-
         public int Width { get; set; }
         public int Height { get; set; }
 
@@ -63,7 +61,6 @@ namespace MapStudio.UI
         private Framebuffer PostEffects;
         private Framebuffer BloomEffects;
         private Framebuffer ScreenBuffer;
-        private Framebuffer GBuffer;
 
         static bool USE_GBUFFER => ShadowMainRenderer.Display;
 
@@ -99,7 +96,7 @@ namespace MapStudio.UI
             if (_context.Camera.Mode == Camera.CameraMode.Inspect)
             {
                 _context.Camera.TargetPosition = new OpenTK.Vector3(0, 0, 0);
-                _context.Camera.Distance = 50;
+                _context.Camera.TargetDistance = 15;
             }
             else
                 _context.Camera.TargetPosition = new OpenTK.Vector3(0, 0, 50);
@@ -111,8 +108,16 @@ namespace MapStudio.UI
         {
             InitScene();
 
-            ScreenBuffer = new Framebuffer(FramebufferTarget.Framebuffer,
-                this.Width, this.Height, 16, PixelInternalFormat.Rgba16f, 2); //2 color attachments
+            DepthTexture = new DepthTexture(Width, Height, PixelInternalFormat.Depth24Stencil8);
+
+            //2 color attachments
+            ScreenBuffer = new Framebuffer(FramebufferTarget.Framebuffer);
+            ScreenBuffer.AddAttachment(FramebufferAttachment.ColorAttachment0,
+                GLTexture2D.CreateUncompressedTexture(this.Width, this.Height, PixelInternalFormat.Rgba16f));
+            ScreenBuffer.AddAttachment(FramebufferAttachment.ColorAttachment1, 
+                GLTexture2D.CreateUncompressedTexture(this.Width, this.Height, PixelInternalFormat.Rgba16f));
+            ScreenBuffer.AddAttachment(FramebufferAttachment.DepthStencilAttachment, DepthTexture);
+
             ScreenBuffer.Resize(Width, Height);
             //color pass + selection highlight pass
             ScreenBuffer.SetDrawBuffers(
@@ -127,24 +132,6 @@ namespace MapStudio.UI
             BloomEffects = new Framebuffer(FramebufferTarget.Framebuffer,
                  Width, Height, PixelInternalFormat.Rgba16f, 1);
             BloomEffects.Resize(Width, Height);
-
-            DepthTexture = new DepthTexture(Width, Height, PixelInternalFormat.DepthComponent24);
-
-            //Set the GBuffer (Depth, Normals and another output)
-            GBuffer = new Framebuffer(FramebufferTarget.Framebuffer);
-            GBuffer.AddAttachment(FramebufferAttachment.ColorAttachment0,
-                GLTexture2D.CreateUncompressedTexture(Width, Height, PixelInternalFormat.R11fG11fB10f, PixelFormat.Rgba, PixelType.Float));
-            GBuffer.AddAttachment(FramebufferAttachment.ColorAttachment3,
-                GLTexture2D.CreateUncompressedTexture(Width, Height, PixelInternalFormat.Rgb10A2, PixelFormat.Rgba, PixelType.Float));
-            GBuffer.AddAttachment(FramebufferAttachment.ColorAttachment4,
-                GLTexture2D.CreateUncompressedTexture(Width, Height, PixelInternalFormat.Rgb10A2, PixelFormat.Rgba, PixelType.Float));
-            GBuffer.AddAttachment(FramebufferAttachment.DepthAttachment, DepthTexture);
-
-            GBuffer.SetReadBuffer(ReadBufferMode.None);
-            GBuffer.SetDrawBuffers(
-                DrawBuffersEnum.ColorAttachment0, DrawBuffersEnum.None, DrawBuffersEnum.None,
-                DrawBuffersEnum.ColorAttachment3, DrawBuffersEnum.ColorAttachment4);
-            GBuffer.Unbind();
         }
 
         //Adds a camera to the scene for path viewing
@@ -174,17 +161,26 @@ namespace MapStudio.UI
             //Resize the current viewport
             Width = width;
             Height = height;
+
             this.OnResize(outputBuffer);
 
-            RenderScene(new RenderFrameArgs()
+            if (_context.SceneRender != null)
             {
-                DisplayAlpha = useAlpha,
-                DisplayBackground = !useAlpha,
-                DisplayOrientationGizmo = false,
-                DisplayGizmo = false,
-                DisplayCursor3D = false,
-                DisplayFloor = false,
-            }, outputBuffer);
+                _context.SceneRender.Render(_context, outputBuffer);
+            }
+            else
+            {
+
+                RenderScene(new RenderFrameArgs()
+                {
+                    DisplayAlpha = useAlpha,
+                    DisplayBackground = !useAlpha,
+                    DisplayOrientationGizmo = false,
+                    DisplayGizmo = false,
+                    DisplayCursor3D = false,
+                    DisplayFloor = false,
+                }, outputBuffer);
+            }
 
             _context.UpdateViewport = true;
 
@@ -218,6 +214,7 @@ namespace MapStudio.UI
         {
             _context.Width = this.Width;
             _context.Height = this.Height;
+            _context.DepthBuffer = this.DepthTexture;
 
             GL.Enable(EnableCap.DepthTest);
 
@@ -228,9 +225,9 @@ namespace MapStudio.UI
 
             ResourceTracker.ResetStats();
 
-            if (SceneRenderOverride != null)
+            if (_context.SceneRender != null)
             {
-                SceneRenderOverride.Render(_context, ScreenBuffer);
+                _context.SceneRender.Render(_context, ScreenBuffer);
             }
             else
                 DrawModels();
@@ -293,7 +290,7 @@ namespace MapStudio.UI
                 _orientationGizmo.Draw(_context);
             if (frameArgs.DisplayCursor3D)
                 _context.Scene.Cursor3D.DrawModel(_context, Pass.OPAQUE);
-            if (frameArgs.DisplayGizmo && _context.Scene.GetSelected().Count > 0)
+            if (frameArgs.DisplayGizmo && _context.TransformTools.ActiveTransforms.Count > 0)
                 _context.TransformTools.Draw(_context);
 
             _objectLinkDrawer.Draw(_context);
@@ -326,7 +323,6 @@ namespace MapStudio.UI
             outputBuffer.Resize(Width, Height);
             ScreenBuffer?.Resize(Width, Height);
             PostEffects?.Resize(Width, Height);
-            GBuffer?.Resize(Width, Height);
             BloomEffects?.Resize(Width, Height);
 
             //Store the screen buffer instance for color buffer effects
@@ -337,7 +333,7 @@ namespace MapStudio.UI
             _context.Camera.Height = this.Height;
             _context.Camera.UpdateMatrices();
 
-            this.SceneRenderOverride?.Resize(Width, Height);
+            _context.SceneRender?.Resize(Width, Height);
         }
 
         public ITransformableObject GetPickedObject(MouseEventInfo e)
@@ -348,8 +344,6 @@ namespace MapStudio.UI
 
         private void DrawModels()
         {
-            DrawGBuffer();
-
             SetViewport();
             ScreenBuffer.Bind();
 
@@ -434,39 +428,6 @@ namespace MapStudio.UI
             }
         }
 
-        private bool draw_shadow_prepass = false;
-        private void DrawGBuffer()
-        {
-            if (!USE_GBUFFER)
-            {
-                if (draw_shadow_prepass)
-                {
-                    _context.Scene.ShadowRenderer.ResetShadowPrepass();
-                    draw_shadow_prepass = false;
-                }
-                return;
-            }
-
-            GBuffer.Bind();
-            SetViewport();
-
-            GL.ClearColor(0, 0, 0, 0);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            foreach (var file in _context.Scene.Objects)
-            {
-                if (file is GenericRenderer)
-                    ((GenericRenderer)file).DrawGBuffer(_context);
-            }
-
-            GBuffer.Unbind();
-
-            _context.Scene.ShadowRenderer.DrawShadowPrepass(_context,
-                 ((GLTexture2D)GBuffer.Attachments[1]),
-                  DepthTexture);
-
-           draw_shadow_prepass = true;
-        }
 
         private GLTexture2D bloomPass;
 
