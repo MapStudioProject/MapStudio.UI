@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using GLFrameworkEngine;
+using ImGuiNET;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -13,7 +14,7 @@ namespace MapStudio.UI
 {
     public class ImageEditorDefaultProgram 
     {
-        private string Extension = ImageFileFormats[1];
+        private string Extension = ImageFileFormats[0];
         private string Format;
 
         private List<string> FormatList = new List<string>();
@@ -29,6 +30,19 @@ namespace MapStudio.UI
 
         private bool isEdited = false;
         private string FileName;
+
+        private EditChannel EditChannelMode = EditChannel.Default;
+
+        private enum EditChannel
+        {
+            Default,
+            Color,
+            Alpha,
+
+            Red,
+            Green,
+            Blue,
+        }
 
         public ImageEditorDefaultProgram(STGenericTexture texture, int arrayLevel, int mipLevel = 0)
         {
@@ -83,6 +97,9 @@ namespace MapStudio.UI
 
             //Generate mipmaps
             var edit = Image.Load<Rgba32>(FileName);
+            if (this.EditChannelMode != EditChannel.Default)
+                edit = SetChannelEdit(edit, EditChannelMode);
+
             //check if width/height was edited
             if (Texture.Width != edit.Width || Texture.Height != edit.Height)
             {
@@ -100,6 +117,98 @@ namespace MapStudio.UI
 
             Texture.Platform.OutputFormat = format;
             Texture.SetImageData(mipmaps, Texture.Width, Texture.Height, ArrayLevel);
+        }
+
+        private void SaveChannel(string path, EditChannel channel)
+        {
+            //original image
+            var rgba = ((GLTexture)Texture.RenderableTex).GetBytes(0);
+            var image = GetChannel(rgba, channel);
+            image.Save(path);
+        }
+
+        private Image<Rgba32> GetChannel(byte[] src, EditChannel channel)
+        {
+            byte[] rgba = new byte[Texture.Width * Texture.Height * 4];
+
+            int index = 0;
+            for (int w = 0; w < Texture.Width; w++)
+            {
+                for (int h = 0; h < Texture.Height; h++)
+                {
+                    switch (channel)
+                    {
+                        case EditChannel.Red: //set red
+                            rgba[index + 0] = src[index + 0];
+                            rgba[index + 1] = src[index + 0];
+                            rgba[index + 2] = src[index + 0];
+                            rgba[index + 3] = 255;
+                            break; 
+                        case EditChannel.Green: //set green
+                            rgba[index + 0] = src[index + 1];
+                            rgba[index + 1] = src[index + 1];
+                            rgba[index + 2] = src[index + 1];
+                            rgba[index + 3] = 255;
+                            break;
+                        case EditChannel.Blue: //set blue
+                            rgba[index + 0] = src[index + 2];
+                            rgba[index + 1] = src[index + 2];
+                            rgba[index + 2] = src[index + 2];
+                            rgba[index + 3] = 255;
+                            break;
+                        case EditChannel.Alpha:  //set alpha
+                            rgba[index + 0] = src[index + 3];
+                            rgba[index + 1] = src[index + 3];
+                            rgba[index + 2] = src[index + 3];
+                            rgba[index + 3] = 255;
+                            break;
+                        case EditChannel.Color: //set color only
+                            rgba[index + 0] = src[index + 0];
+                            rgba[index + 1] = src[index + 1];
+                            rgba[index + 2] = src[index + 2];
+                            rgba[index + 3] = 255;
+                            break;
+
+                    }
+                    index += 4;
+                }
+            }
+            return Image.LoadPixelData<Rgba32>(rgba, (int)Texture.Width, (int)Texture.Height);
+        }
+
+        private Image<Rgba32> SetChannelEdit(Image<Rgba32> edited, EditChannel channel)
+        {
+            //original image
+            var rgba = ((GLTexture)Texture.RenderableTex).GetBytes(0);
+            //target edit
+            var target = edited.GetSourceInBytes();
+
+            int index = 0;
+            for (int w = 0; w < Texture.Width; w++)
+            {
+                for (int h = 0; h < Texture.Height; h++)
+                {
+                    switch (channel)
+                    {
+                        case EditChannel.Red: rgba[index + 0] = target[index + 0]; break; //set red
+                        case EditChannel.Green: rgba[index + 1] = target[index + 0]; break; //set green
+                        case EditChannel.Blue: rgba[index + 2] = target[index + 0]; break; //set blue
+                        case EditChannel.Alpha: rgba[index + 3] = target[index + 0]; break; //set alpha
+                        case EditChannel.Color: //set color only
+                            rgba[index + 0] = target[index + 0];
+                            rgba[index + 1] = target[index + 1];
+                            rgba[index + 2] = target[index + 2];
+                            break; 
+
+                    }
+                    index += 4;
+                }
+            }
+
+            //dispose old
+            edited.Dispose();
+            //newly edited image
+            return Image.LoadPixelData<Rgba32>(rgba, (int)Texture.Width, (int)Texture.Height);
         }
 
         public void Start()
@@ -123,6 +232,12 @@ namespace MapStudio.UI
                 ImguiCustomWidgets.ComboScrollable("##ImageFormat", Format, ref Format, FormatList);
                 ImGui.NextColumn();
             }
+
+            ImGui.Text("Channel Edit");
+            ImGui.NextColumn();
+
+            ImguiCustomWidgets.ComboScrollable("##ChannelEdit", this.EditChannelMode.ToString(), ref this.EditChannelMode);
+            ImGui.NextColumn();
 
             ImGui.Text("Show Edit Dialog");
             ImGui.NextColumn();
@@ -164,7 +279,10 @@ namespace MapStudio.UI
                     Texture.SaveASTC(path);
                     break;
                 default:
-                    Texture.SaveBitmap(path, setting);
+                    if (this.EditChannelMode == EditChannel.Default)
+                        Texture.SaveBitmap(path, setting);
+                    else
+                        SaveChannel(path, this.EditChannelMode);
                     break;
             }
 
@@ -212,7 +330,7 @@ namespace MapStudio.UI
 
         static string[] ImageFileFormats = new string[]
         {
-            "Direct Draw Surface (.dds)",
+           // "Direct Draw Surface (.dds)",
             "Portable Network Graphics (.png)",
             "Joint Photographic Experts Group (.jpg)",
             "TGA (.tga)",
