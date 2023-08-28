@@ -214,7 +214,7 @@ namespace MapStudio.UI
 
         public class ProgramSettings
         {
-            public string Theme { get; set; } = "DARK_BLUE_THEME";
+            public string Theme { get; set; } = "DARK_THEME";
 
             /// <summary>
             /// The language of the program.
