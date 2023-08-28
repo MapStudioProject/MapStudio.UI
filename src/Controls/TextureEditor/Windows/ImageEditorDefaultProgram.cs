@@ -26,7 +26,8 @@ namespace MapStudio.UI
         public int ArrayLevel;
         public int MipLevel;
 
-        private bool ShowDialog = false;
+        private bool showDialog = false;
+        private bool changeDefaultProgram = false;
 
         private bool isEdited = false;
         private string FileName;
@@ -77,7 +78,12 @@ namespace MapStudio.UI
         private void OnFileWatcherChanged(object sender, FileSystemEventArgs e)
         {
             Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
-            //var Result = TinyFileDialog.MessageBoxInfoYesNo("Texture has been modifed in external program! Would you like to apply the edits?");
+            if (showDialog)
+            {
+                var Result = TinyFileDialog.MessageBoxInfoYesNo("Texture has been modifed in external program! Would you like to apply the edits?");
+                if (Result != 1)
+                    return;
+            }
 
             FileName = e.FullPath;
             isEdited = true;
@@ -241,8 +247,13 @@ namespace MapStudio.UI
 
             ImGui.Text("Show Edit Dialog");
             ImGui.NextColumn();
-            ImGui.Checkbox("", ref ShowDialog);
+            ImGui.Checkbox("", ref showDialog);
             ImGui.NextColumn();
+
+            ImGui.Text("Change Default Program");
+            ImGui.NextColumn();
+            ImGui.Checkbox("", ref showDialog);
+
 
             ImGui.Columns(1);
 
