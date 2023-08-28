@@ -364,7 +364,7 @@ namespace MapStudio.UI
             /// <summary>
             /// Gets or sets the camera controller mode to determine how the camera moves.
             /// </summary>
-            public Camera.CameraMode Mode { get; set; } = GLFrameworkEngine.Camera.CameraMode.FlyAround;
+            public Camera.CameraMode Mode { get; set; } = GLFrameworkEngine.Camera.CameraMode.Inspect;
 
             /// <summary>
             /// Toggles orthographic projection.
