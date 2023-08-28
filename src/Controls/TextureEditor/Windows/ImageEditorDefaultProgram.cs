@@ -247,12 +247,12 @@ namespace MapStudio.UI
 
             ImGui.Text("Show Edit Dialog");
             ImGui.NextColumn();
-            ImGui.Checkbox("", ref showDialog);
+            ImGui.Checkbox("##showDialog", ref showDialog);
             ImGui.NextColumn();
 
             ImGui.Text("Change Default Program");
             ImGui.NextColumn();
-            ImGui.Checkbox("", ref showDialog);
+            ImGui.Checkbox("##changeDefaultProgram", ref changeDefaultProgram);
 
 
             ImGui.Columns(1);
@@ -263,8 +263,6 @@ namespace MapStudio.UI
         private void LoadDefaultProgram(bool isOk)
         {
             if (!isOk) return;
-
-            bool useDefaultEditor = true;
 
             var setting = new TextureExportSettings()
             {
@@ -301,7 +299,7 @@ namespace MapStudio.UI
             FileWatcher.EnableRaisingEvents = true;
             FileWatcher.Filter = Path.GetFileName(path);
 
-            if (useDefaultEditor)
+            if (!changeDefaultProgram)
                 OpenWithDefaultProgram(path);
             else
                 ShowOpenWithDialog(path);
