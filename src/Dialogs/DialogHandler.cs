@@ -66,11 +66,11 @@ namespace MapStudio.UI
             Flags = ImGuiWindowFlags.None;
         }
 
-        public static void Show(string name, Action dialogRender, Action<bool> dialogResult)
+        public static void Show(string name, Action dialogRender, Action<bool> dialogResult, float width = 0, float height = 0)
         {
             //unconfigured. Defaults to ini settings
-            Width = 0;
-            Height = 0;
+            Width = width;
+            Height = height;
             Name = name;
             DialogRender = dialogRender;
             open = true;

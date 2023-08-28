@@ -219,7 +219,7 @@ namespace MapStudio.UI
 
         public void Start()
         {
-            DialogHandler.Show("Default Program ", DrawUI, LoadDefaultProgram);
+            DialogHandler.Show("Default Program ", DrawUI, LoadDefaultProgram, 320, 170);
         }
 
         private void DrawUI()
