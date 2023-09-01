@@ -584,7 +584,7 @@ namespace MapStudio.UI
                             };
                             break;
                         case STInterpoaltionType.Linear:
-                            keyFrame = new STLinearKeyFrame()
+                            keyFrame = new STKeyFrame()
                             {
                                 Frame = frame,
                                 Value = value,

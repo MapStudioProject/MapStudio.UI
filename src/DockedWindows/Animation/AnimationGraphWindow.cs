@@ -289,14 +289,15 @@ namespace MapStudio.UI
 
             if (!IsEditorDopeSheet)
             {
-                if (ImGui.BeginChild("timeline_menu", new System.Numerics.Vector2(ImGui.GetColumnWidth(), 50), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+                if (ImGui.BeginChild("timeline_menu", new System.Numerics.Vector2(ImGui.GetColumnWidth(), 22), false, 
+                    ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.MenuBar))
                 {
                     AnimCurveEditor.RenderMenu();
                 }
                 ImGui.EndChild();
             }
 
-            if (ImGui.BeginChild("timeline_child1", new System.Numerics.Vector2(ImGui.GetColumnWidth(), size.Y - posY - propertyMenuHeight - 50), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+            if (ImGui.BeginChild("timeline_child1", new System.Numerics.Vector2(ImGui.GetColumnWidth(), size.Y - posY - propertyMenuHeight - 22), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
             {
                 DrawDopeSheetTimeline();
             }
