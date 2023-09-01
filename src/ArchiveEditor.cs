@@ -142,9 +142,6 @@ namespace MapStudio.UI
 
                 OnSelected += delegate  
                 {
-                    //TODO this will work better when the file editor gets switched better for opened files
-                   // if (IsSelected)
-                        //Workspace.ActiveWorkspace.ActiveEditor = FileInfo.ParentArchiveFile as FileEditor;
                 };
                 OnHeaderRenamed += delegate
                 {
@@ -263,6 +260,7 @@ namespace MapStudio.UI
                 this.Tag = FileInfo.FileFormat;
                 this.TagUI = new NodePropertyUI();
                 this.TagUI.Tag = editor.Root.TagUI;
+                editor.Root.Tag = FileInfo.FileFormat;
 
                 var parent = this.Parent;
                 var children = parent.Children;
