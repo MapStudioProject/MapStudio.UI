@@ -8,6 +8,7 @@ using MapStudio.UI;
 using GLFrameworkEngine;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Graphics;
+using ImGuiNET;
 
 namespace UIFramework
 {
@@ -108,6 +109,21 @@ namespace UIFramework
             }
 
             base.OnRenderFrame(e);
+
+            //Check for custom cursor
+            var mouseCursor = ImGui.GetMouseCursor();
+
+            bool isCustom = mouseCursor != ImGuiMouseCursor.Arrow && mouseCursor != ImGuiMouseCursor.None;
+            if (isCustom && this.CursorVisible)
+            {
+                ImGui.GetIO().MouseDrawCursor = true;
+                this.CursorVisible = false;
+            }
+            else if (!isCustom && !this.CursorVisible)
+            {
+                this.CursorVisible = true;
+                ImGui.GetIO().MouseDrawCursor = false;
+            }
 
             //Only force the focus once
             if (MainWindow.ForceFocus)

@@ -730,7 +730,10 @@ namespace MapStudio.UI
                     }
                     //Double click event
                     if (leftDoubleClicked && !isToggleOpened && node.IsSelected) {
-                        node.OnDoubleClicked();
+                        UIManager.ActionExecBeforeUIDraw = () =>
+                        {
+                            node.OnDoubleClicked();
+                        };
                     }
 
                     //Update the active file format when selected. (updates dockspace layout and file menus)

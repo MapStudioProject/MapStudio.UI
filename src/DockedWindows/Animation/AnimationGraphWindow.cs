@@ -7,6 +7,7 @@ using ImGuiNET;
 using CurveEditorLibrary;
 using Toolbox.Core.Animations;
 using UIFramework;
+using Toolbox.Core;
 
 namespace MapStudio.UI
 {
@@ -22,10 +23,10 @@ namespace MapStudio.UI
         public bool IsRecordMode = false;
 
         AnimationPlayer AnimationPlayer { get; set; }
-        AnimationTimelineControl CurveEditor { get; set; }
-        AnimationTree AnimationHierarchy { get; set; }
+        AnimationTimelineControl TimelineBackground { get; set; }
         DopeSheetEditor DopeSheet;
         AnimCurveEditor AnimCurveEditor;
+        public AnimationTree AnimationHierarchy { get; set; }
 
         public AnimationProperties PropertyWindow;
 
@@ -50,29 +51,37 @@ namespace MapStudio.UI
             hierachySize = 200;
             PropertyWindow = new AnimationProperties();
             AnimationPlayer = new AnimationPlayer();
-            CurveEditor = new AnimationTimelineControl();
-            AnimationHierarchy = new AnimationTree(PropertyWindow, CurveEditor);
+            TimelineBackground = new AnimationTimelineControl();
+            AnimationHierarchy = new AnimationTree(PropertyWindow, TimelineBackground);
             PropertyWindow.Opened = false;
 
-            CurveEditor.OnLoad();
-            CurveEditor.BackColor = System.Drawing.Color.FromArgb(40, 40, 40, 40);
+            TimelineBackground.OnLoad();
+            TimelineBackground.BackColor = System.Drawing.Color.FromArgb(40, 40, 40, 40);
             AnimationPlayer.OnFrameChanged += delegate
             {
-                if (CurveEditor.CurrentFrame != (int)AnimationPlayer.CurrentFrame)
-                    CurveEditor.CurrentFrame = (int)AnimationPlayer.CurrentFrame;
+                if (TimelineBackground.CurrentFrame != (int)AnimationPlayer.CurrentFrame)
+                    TimelineBackground.CurrentFrame = (int)AnimationPlayer.CurrentFrame;
             };
 
-            CurveEditor.OnFrameChanged += delegate {
-                if (AnimationPlayer.CurrentFrame != CurveEditor.CurrentFrame)
-                    AnimationPlayer.SetFrame(CurveEditor.CurrentFrame);
+            TimelineBackground.OnFrameChanged += delegate {
+                if (AnimationPlayer.CurrentFrame != TimelineBackground.CurrentFrame)
+                    AnimationPlayer.SetFrame(TimelineBackground.CurrentFrame);
             };
-            CurveEditor.OnFrameCountChanged += delegate {
-                AnimationPlayer.FrameCount = CurveEditor.FrameCount;
+            TimelineBackground.OnFrameCountChanged += delegate {
+                AnimationPlayer.FrameCount = TimelineBackground.FrameCount;
                 if (ActiveAnimation != null)
-                    ActiveAnimation.FrameCount = CurveEditor.FrameCount;
+                    ActiveAnimation.FrameCount = TimelineBackground.FrameCount;
             };
-            DopeSheet = new DopeSheetEditor(CurveEditor, AnimationHierarchy);
-            AnimCurveEditor = new AnimCurveEditor(CurveEditor, AnimationHierarchy);
+            DopeSheet = new DopeSheetEditor(TimelineBackground, AnimationHierarchy);
+            AnimCurveEditor = new AnimCurveEditor(TimelineBackground, AnimationHierarchy);
+            AnimCurveEditor.TrackSelected += delegate
+            {
+                updateTimelineRender = true;
+            };
+            AnimCurveEditor.OnValueUpdated += delegate
+            {
+                AnimationPlayer.SetFrame(AnimationPlayer.CurrentFrame);
+            };
             AnimationHierarchy.OnValueUpdated += delegate
             {
                 AnimationPlayer.SetFrame(AnimationPlayer.CurrentFrame);
@@ -81,16 +90,16 @@ namespace MapStudio.UI
             {
                 if (ActiveAnimation != null)
                 {
-                    CurveEditor.FrameCount = (int)ActiveAnimation.FrameCount;
+                    TimelineBackground.FrameCount = (int)ActiveAnimation.FrameCount;
                     AnimationPlayer.FrameCount = ActiveAnimation.FrameCount;
-                    CurveEditor.SetFrameRange(ActiveAnimation.FrameCount);
+                    TimelineBackground.SetFrameRange(ActiveAnimation.FrameCount);
                     //Update frame display
-                    CurveEditor.CurrentFrame = (int)ActiveAnimation.Frame;
+                    TimelineBackground.CurrentFrame = (int)ActiveAnimation.Frame;
                     AnimationPlayer.SetFrame(ActiveAnimation.Frame);
                     updateTimelineRender = true;
                 }
             };
-            CurveEditor.ValueEditor = false;
+            TimelineBackground.ValueEditor = false;
 
             //Dock settings
             this.DockDirection = ImGuiDir.Down;
@@ -129,8 +138,8 @@ namespace MapStudio.UI
 
         public void Reset()
         {
-            CurveEditor.CurrentFrame = 0;
-            CurveEditor.FrameCount = 1;
+            TimelineBackground.CurrentFrame = 0;
+            TimelineBackground.FrameCount = 1;
             AnimationPlayer.Reset(true);
 
             updateTimelineRender = true;
@@ -146,7 +155,7 @@ namespace MapStudio.UI
             AnimCurveEditor.Reset();
             AnimationHierarchy.Load(new List<STAnimation>() { animation });
             //Todo, high frame counts can cause freeze issues atm
-            CurveEditor.SetFrameRange(AnimationPlayer.FrameCount, 10);
+            TimelineBackground.SetFrameRange(AnimationPlayer.FrameCount, 10);
             AnimationPlayer.SetFrame(AnimationPlayer.CurrentFrame);
 
             updateTimelineRender = true;
@@ -234,7 +243,7 @@ namespace MapStudio.UI
 
                         ActiveAnimation.FrameCount = frameCount;
                         AnimationPlayer.FrameCount = frameCount;
-                        CurveEditor.SetFrameRange(frameCount);
+                        TimelineBackground.SetFrameRange(frameCount);
                         updateTimelineRender = true;
                     }
                     bool loop = ActiveAnimation.Loop;
@@ -263,7 +272,8 @@ namespace MapStudio.UI
             var posY = ImGui.GetCursorPosY();
 
             ImGui.Columns(2);
-            hierachySize = ImGui.GetColumnWidth();
+            hierachySize = ImGui.GetColumnWidth(0);
+            var propSize = ImGui.GetColumnWidth(2);
 
             if (ImGui.BeginChild("animation_hierarchy1", new System.Numerics.Vector2(hierachySize, size.Y - posY - 25), true))
             {
@@ -274,23 +284,40 @@ namespace MapStudio.UI
             DrawTimelineEditorSwitch();
 
             ImGui.NextColumn();
-            if (ImGui.BeginChild("timeline_child1", new System.Numerics.Vector2(size.X - hierachySize, size.Y - posY), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+
+            float propertyMenuHeight =!IsEditorDopeSheet ? 50 : 0;
+
+            if (!IsEditorDopeSheet)
+            {
+                if (ImGui.BeginChild("timeline_menu", new System.Numerics.Vector2(ImGui.GetColumnWidth(), 50), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+                {
+                    DrawDopeSheetTimeline();
+                }
+                ImGui.EndChild();
+                CurveEditor.Render();
+            }
+
+            if (ImGui.BeginChild("timeline_child1", new System.Numerics.Vector2(ImGui.GetColumnWidth(), size.Y - posY - propertyMenuHeight - 50), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
             {
                 DrawDopeSheetTimeline();
             }
             ImGui.EndChild();
 
+            if (propertyMenuHeight > 0)
+            {
+                if (ImGui.BeginChild("properties_menu", new System.Numerics.Vector2(ImGui.GetColumnWidth(), propertyMenuHeight), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
+                {
+                    DrawPropertiesMenu();
+                }
+                ImGui.EndChild();
+            }
+
             ImGui.NextColumn();
-
-           // DrawProperties();
-
-           // ImGui.NextColumn();
         }
 
         private void DrawTimelineEditorSwitch()
         {
             //Place the cursor bottom right of the tree
-            // ImGui.SetCursorPos(new Vector2(ImGui.GetColumnWidth() - 100, posY - size.Y - 23));
             //Draw buttons to switch editors
             var selectColor = ImGui.GetStyle().Colors[(int)ImGuiCol.Header];
             var buttonColor = ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg];
@@ -320,7 +347,7 @@ namespace MapStudio.UI
             if (DrawButton("Dope Sheet", IsEditorDopeSheet))
             {
                 IsEditorDopeSheet = true;
-                CurveEditor.ValueEditor = false;
+                TimelineBackground.ValueEditor = false;
                 updateTimelineRender = true;
             }
 
@@ -329,49 +356,150 @@ namespace MapStudio.UI
             if (DrawButton("Curve Editor", !IsEditorDopeSheet))
             {
                 IsEditorDopeSheet = false;
-                CurveEditor.ValueEditor = true;
+                TimelineBackground.ValueEditor = true;
                 updateTimelineRender = true;
             }
         }
 
-        private void DrawProperties()
+        private void DrawTrackProperties()
         {
-            if (DopeSheet.SelectedKeys.Count == 0)
+            var track = this.AnimCurveEditor.SelectedTracks.FirstOrDefault();
+            if (track == null)
                 return;
 
-            var selectedKey = DopeSheet.SelectedKeys.FirstOrDefault();
+            ImguiPropertyColumn.Begin("propertiesTrack");
+
+            ImguiPropertyColumn.Combo<STInterpoaltionType>("Interpolation", track.Track, "InterpolationType");
+            ImguiPropertyColumn.Combo<STLoopMode>("WrapMode", track.Track, "WrapMode");
+
+            ImguiPropertyColumn.End();
+        }
+
+        private void DrawPropertiesMenu()
+        {
+            ImguiPropertyColumn.Begin("properties", 5, false);
+
+            var selected = IsEditorDopeSheet ? this.DopeSheet.SelectedKeys : this.AnimCurveEditor.SelectedKeys;
+            var selectedKey = selected.FirstOrDefault();
+
+            if (selectedKey == null)
+            {
+                ImguiPropertyColumn.End();
+                return;
+            }
+
             float frame = selectedKey.Frame;
             float value = selectedKey.KeyFrame.Value;
             var track = selectedKey.GetTrack();
             var keyFrame = selectedKey.KeyFrame;
 
-            ImGuiHelper.ComboFromEnum<STInterpoaltionType>("Interpolation", track, "InterpolationType");
-            ImGuiHelper.ComboFromEnum<STLoopMode>("Wrap", track, "WrapMode");
+            ImGuiHelper.BoldText("Interpolation"); ImGui.NextColumn();
+            ImGuiHelper.BoldText("Frame"); ImGui.NextColumn();
+            ImGuiHelper.BoldText("Value"); ImGui.NextColumn();
+            ImGuiHelper.BoldText("Slope In"); ImGui.NextColumn();
+            ImGuiHelper.BoldText("Slope Out"); ImGui.NextColumn();
 
-            if (ImGui.DragFloat($"Frame", ref frame, 1))  
+            ImguiPropertyColumn.Combo<STInterpoaltionType>("Interpolation", track, "InterpolationType");
+
+            if (ImguiPropertyColumn.DragFloat("Frame", ref frame, 1f))
                 selectedKey.Frame = frame;
-            
-            if (ImGui.DragFloat($"Value", ref value, 1))
-                selectedKey.KeyFrame.Value = value;
+
+            if (ImguiPropertyColumn.DragFloat("Value", ref value, 1f))
+                selectedKey.Value = value;
 
             if (keyFrame is STHermiteKeyFrame)
             {
-                var tangentIn = ((STHermiteKeyFrame)keyFrame).TangentIn;
-                var tangentOut = ((STHermiteKeyFrame)keyFrame).TangentOut;
+                var tangentIn = selectedKey.SlopeIn;
+                var tangentOut = selectedKey.SlopeOut;
 
-                if (ImGui.DragFloat($"Slope In", ref tangentIn))
-                    ((STHermiteKeyFrame)keyFrame).TangentIn = tangentIn;
+                if (ImguiPropertyColumn.DragFloat("Slope In", ref tangentIn, 0.01f))
+                    selectedKey.SlopeIn = tangentIn;
 
-                if (ImGui.DragFloat($"Slope Out", ref tangentOut))
-                    ((STHermiteKeyFrame)keyFrame).TangentIn = tangentOut;
+                if (ImguiPropertyColumn.DragFloat("Slope Out", ref tangentOut, 0.01f))
+                    selectedKey.SlopeOut = tangentOut;
+            }
+
+         //   ImguiPropertyColumn.Combo<STLoopMode>("WrapMode", track, "WrapMode");
+        }
+
+        private void DrawProperties()
+        {
+            ImguiPropertyColumn.Begin("properties");
+
+            var selected = IsEditorDopeSheet ? this.DopeSheet.SelectedKeys : this.AnimCurveEditor.SelectedKeys;
+            var selectedKey = selected.FirstOrDefault();
+
+            if (!this.IsEditorDopeSheet)
+            {
+                var selectedTrack = this.AnimCurveEditor.SelectedTracks.FirstOrDefault();
+                if (selectedTrack != null)
+                {
+                    ImGui.Text("Selected Key");
+                    ImGui.NextColumn();
+
+                    ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 15);
+
+                    string key = selectedKey != null ? $"Key{selectedTrack.Keys.IndexOf(selectedKey)}" : $"None";
+                    if (ImGui.BeginCombo("##SelectedKey", key))
+                    {
+                        int index = 0;
+                        foreach (var k in selectedTrack.Keys)
+                        {
+                            bool select = k == selectedKey;
+                            if (ImGui.Selectable($"Key{index++}", select))
+                            {
+                                this.AnimCurveEditor.DeselectAll();
+                                k.IsSelected = true;
+                                this.AnimCurveEditor.SelectedKeys.Add(k);
+                                this.AnimCurveEditor.SelectionChanged();
+                            }
+                        }
+                        ImGui.EndCombo();
+                    }
+
+                    ImGui.PopItemWidth();
+
+                    ImGui.NextColumn();
+                }
+            }
+
+            if (selectedKey == null)
+            {
+                ImguiPropertyColumn.End();
+                return;
+            }
+
+            float frame = selectedKey.Frame;
+            float value = selectedKey.KeyFrame.Value;
+            var track = selectedKey.GetTrack();
+            var keyFrame = selectedKey.KeyFrame;
+
+            if (ImguiPropertyColumn.DragFloat("Frame", ref frame, 1f))
+                selectedKey.Frame = frame;
+
+            if (ImguiPropertyColumn.DragFloat("Value", ref value, 1f))
+                selectedKey.Value = value;
+
+            if (keyFrame is STHermiteKeyFrame)
+            {
+                var tangentIn = selectedKey.SlopeIn;
+                var tangentOut = selectedKey.SlopeOut;
+
+                if (ImguiPropertyColumn.DragFloat("Slope In", ref tangentIn, 0.01f))
+                    selectedKey.SlopeIn = tangentIn;
+
+                if (ImguiPropertyColumn.DragFloat("Slope Out", ref tangentOut, 0.01f))
+                    selectedKey.SlopeOut = tangentOut;
             }
             if (keyFrame is STLinearKeyFrame)
             {
                 var delta = ((STLinearKeyFrame)keyFrame).Delta;
 
-                if (ImGui.DragFloat($"Delta", ref delta))
+                if (ImguiPropertyColumn.DragFloat("Delta Out", ref delta, 0.01f))
                     ((STLinearKeyFrame)keyFrame).Delta = delta;
             }
+
+            ImGui.EndColumns();
         }
 
         private void AdvanceLastKeyFrame()
@@ -447,7 +575,7 @@ namespace MapStudio.UI
         private void UpdateCurrentFrame(float frame)
         {
             AnimationPlayer.SetFrame(frame);
-            CurveEditor.CurrentFrame = (int)frame;
+            TimelineBackground.CurrentFrame = (int)frame;
             updateTimelineRender = true;
         }
 
@@ -456,19 +584,19 @@ namespace MapStudio.UI
             var size = ImGui.GetWindowSize();
             var pos = ImGui.GetCursorPos();
             var viewerSize = size - pos;
-            if (CurveEditor.Width != viewerSize.X || CurveEditor.Height != viewerSize.Y)
+            if (TimelineBackground.Width != viewerSize.X || TimelineBackground.Height != viewerSize.Y)
             {
-                CurveEditor.Width = (int)viewerSize.X;
-                CurveEditor.Height = (int)viewerSize.Y;
-                CurveEditor.Resize();
+                TimelineBackground.Width = (int)viewerSize.X;
+                TimelineBackground.Height = (int)viewerSize.Y;
+                TimelineBackground.Resize();
                 updateTimelineRender = true;
             }
 
-            if (CurveEditor.FrameCount != AnimationPlayer.FrameCount)
-                CurveEditor.FrameCount = (int)AnimationPlayer.FrameCount;
+            if (TimelineBackground.FrameCount != AnimationPlayer.FrameCount)
+                TimelineBackground.FrameCount = (int)AnimationPlayer.FrameCount;
 
             var backgroundColor = ImGui.GetStyle().Colors[(int)ImGuiCol.MenuBarBg];
-            CurveEditor.BGColor = new Vector4(backgroundColor.X, backgroundColor.Y, backgroundColor.Z, 1.0f);
+            TimelineBackground.BGColor = new Vector4(backgroundColor.X, backgroundColor.Y, backgroundColor.Z, 1.0f);
 
             if (ImGui.IsWindowHovered() && ImGui.IsWindowFocused() || _mouseDown)
                 UpdateCurveEvents();
@@ -480,17 +608,17 @@ namespace MapStudio.UI
 
             if (updateTimelineRender || AnimationPlayer.IsPlaying)
             {
-                CurveEditor.Render();
+                TimelineBackground.Render();
                 updateTimelineRender = false;
             }
 
-            var id = CurveEditor.GetTextureID();
+            var id = TimelineBackground.GetTextureID();
             ImGui.Image((IntPtr)id, viewerSize,
                 new System.Numerics.Vector2(0, 1),
                 new System.Numerics.Vector2(1, 0));
 
             ImGui.SetCursorPos(pos);
-            CurveEditor.DrawText();
+            TimelineBackground.DrawText();
             ImGui.SetCursorPos(pos);
 
             if (IsEditorDopeSheet)
@@ -505,7 +633,6 @@ namespace MapStudio.UI
                 DopeSheet.OnKeyDown(state);
             else
                 AnimCurveEditor.OnKeyDown(state);
-
         }
 
         private float previousMouseWheel;
@@ -524,7 +651,7 @@ namespace MapStudio.UI
                 else
                     AnimCurveEditor.ResetMouse(mouseInfo);
 
-                CurveEditor.ResetMouse(mouseInfo);
+                TimelineBackground.ResetMouse(mouseInfo);
                 onEnter = false;
             }
 
@@ -534,7 +661,7 @@ namespace MapStudio.UI
                     DopeSheet.OnMouseDown(mouseInfo);
                 else
                     AnimCurveEditor.OnMouseDown(mouseInfo);
-                CurveEditor.OnMouseDown(mouseInfo);
+                TimelineBackground.OnMouseDown(mouseInfo);
                 previousMouseWheel = 0;
                 _mouseDown = true;
             }
@@ -548,7 +675,7 @@ namespace MapStudio.UI
                 else
                     AnimCurveEditor.OnMouseUp(mouseInfo);
 
-                CurveEditor.OnMouseUp(mouseInfo);
+                TimelineBackground.OnMouseUp(mouseInfo);
                 _mouseDown = false;
             }
 
@@ -559,14 +686,14 @@ namespace MapStudio.UI
             previousMouseWheel = mouseInfo.WheelPrecise;
 
             //  if (_mouseDown)
-            CurveEditor.OnMouseMove(mouseInfo);
+            TimelineBackground.OnMouseMove(mouseInfo);
 
             if (IsEditorDopeSheet)
                 DopeSheet.OnMouseMove(mouseInfo);
             else
                 AnimCurveEditor.OnMouseMove(mouseInfo);
 
-            CurveEditor.OnMouseWheel(mouseInfo, controlDown, shiftDown);
+            TimelineBackground.OnMouseWheel(mouseInfo, controlDown, shiftDown);
 
             updateTimelineRender = true;
         }

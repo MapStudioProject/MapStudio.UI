@@ -255,16 +255,36 @@ namespace MapStudio.UI
                 var editor = FileInfo.FileFormat as FileEditor;
                 editor.Scene.Init();
 
+                editor.Root.Header = this.Header;
+                editor.Root.Icon = this.Icon;
+                editor.Root.IconColor = this.IconColor;
+                editor.Root.CanRename = this.CanRename;
+
                 this.Tag = FileInfo.FileFormat;
                 this.TagUI = new NodePropertyUI();
                 this.TagUI.Tag = editor.Root.TagUI;
 
+                var parent = this.Parent;
+                var children = parent.Children;
+
+                //Insert the loaded file node and swap the current archive node
+                var index = children.IndexOf(this);
+                children.RemoveAt(index);
+                children.Insert(index, editor.Root);
+
+                //Insert all the archive menus into the root node but as first menu
+                var archiveNode = new MenuItemModel("Archive");
+                archiveNode.MenuItems.AddRange(this.ContextMenus);
+                editor.Root.ContextMenus.Insert(0, archiveNode);
+
+                editor.Root.OnHeaderRenamed += delegate
+                {
+                    this.Header = editor.Root.Header;
+                };
+
+                //Load as archive file if needed
                 if (FileInfo.FileFormat is IArchiveFile)
                     ArchiveEditor.Load((IArchiveFile)FileInfo.FileFormat, editor.Root);
-
-                this.Children.Clear();
-                foreach (var child in editor.Root.Children)
-                    this.Children.Add(child);
 
                 Workspace.ActiveWorkspace.ViewportWindow.Pipeline.AddFile(editor, this.Header);
                 Workspace.ActiveWorkspace.ActiveEditor = editor;

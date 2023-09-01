@@ -7,12 +7,20 @@ using Toolbox.Core.Animations;
 using CurveEditorLibrary;
 using GLFrameworkEngine;
 using UIFramework;
+using Newtonsoft.Json.Linq;
+using static GLFrameworkEngine.CameraFrame;
 
 namespace MapStudio.UI
 {
     public class AnimCurveEditor
     {
         private string TrackName = "Select a track to edit";
+
+        private float SnapFrame = 1.0f;
+        private float SnapValue = 0.0f;
+
+        public EventHandler TrackSelected;
+        public EventHandler OnValueUpdated;
 
         //Copy
         List<AnimationTree.KeyNode> CopiedKeys = new List<AnimationTree.KeyNode>();
@@ -23,6 +31,10 @@ namespace MapStudio.UI
         public List<float> PreDragValues = new List<float>();
         public List<float> PreDragInSlopes = new List<float>();
         public List<float> PreDragOutSlopes = new List<float>();
+
+        public bool AlwaysShowSlopes = false;
+
+        public List<AnimationTree.TrackNode> SelectedTracks = new List<AnimationTree.TrackNode>();
 
         //Undo/redo
         private UndoStack UndoStack = new UndoStack();
@@ -38,8 +50,6 @@ namespace MapStudio.UI
         //Dope sheet editor comprised of a tree and a timeline
         private AnimationTimelineControl Timeline;
         private AnimationTree Tree;
-
-        private AnimationTree.TrackNode SelectedTrack;
 
         private ResizeMode _ResizeMode = ResizeMode.None;
         private ResizeOperation ResizeOp = null;
@@ -67,16 +77,22 @@ namespace MapStudio.UI
         Vector2 lastMousePos;
         Vector2 mouseDownPos;
 
+        private float minValue = -10000000;
+        private float maxValue = 10000000;
+
         bool movementChanged = false;
         bool _mouseDown = false;
 
-        public AnimCurveEditor(AnimationTimelineControl timeline, AnimationTree tree) {
+        public AnimCurveEditor(AnimationTimelineControl timeline, AnimationTree tree = null) {
             Timeline = timeline;
             Tree = tree;
-            tree.OnRemoved += delegate
+            if (tree != null)
             {
-                DeselectAll();
-            };
+                tree.OnRemoved += delegate
+                {
+                    DeselectAll();
+                };
+            }
             SelectionBounding = new BoundingBox2D(new Vector2(), new Vector2());
             SelectionBox.OnSelectionStart += delegate
             {
@@ -85,9 +101,12 @@ namespace MapStudio.UI
         }
 
         //deselects all keys currently selected
-        private void DeselectAll()
+        public void DeselectAll()
         {
-            foreach (var key in SelectedKeys)
+            if (SelectedTracks.Count == 0)
+                return;
+
+            foreach (var key in SelectedTracks.SelectMany(x => x.Keys))
             {
                 key.SelectedByBox = false;
                 key.IsSelected = false;
@@ -103,8 +122,18 @@ namespace MapStudio.UI
         public void Reset()
         {
             SelectedKeys.Clear();
-            SelectedTrack = null;
+            SelectedTracks.Clear();
             TrackName = "Select a track to edit";
+        }
+
+        //For making new instances without a animation tree
+        public void OnTrackSelect(STAnimation anim, STAnimationTrack track)
+        {
+            var SelectedTrack = new AnimationTree.TrackNode(anim, track);
+            SelectedTrack.IsSelected = true;
+
+            SelectedTracks.Add(SelectedTrack);
+            OnTrackSelect(SelectedTrack);
         }
 
         public void OnTrackSelect(AnimationTree.TrackNode track)
@@ -117,10 +146,21 @@ namespace MapStudio.UI
                 return;
             }
 
-            var min = track.Keys.Max(x => x.KeyFrame.Value);
-            var max = track.Keys.Min(x => x.KeyFrame.Value);
+            var min = track.Keys.Min(x => x.KeyFrame.Value);
+            var max = track.Keys.Max(x => x.KeyFrame.Value);
 
             Timeline.SetValueRange(min - 1, max + 1);
+
+            minValue = -10000000;
+            maxValue = 10000000;
+
+            if (track is AnimationTree.TrackNodeVisibility)
+            {
+                minValue = 0;
+                minValue = 1;
+            }
+
+            TrackSelected?.Invoke(track, EventArgs.Empty);
         }
 
         /// <summary>
@@ -128,6 +168,35 @@ namespace MapStudio.UI
         /// </summary>
         public void Render()
         {
+            if (ImGui.Button("   \uf55b   "))
+            {
+
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("   \uf1e0   "))
+            {
+
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("   \ue289   "))
+            {
+
+            }
+            ImGui.SameLine();
+            ImGui.Text("Snap Frame");
+            ImGui.SameLine();
+            if (ImGui.InputFloat("##SnapFrame", ref SnapFrame))
+            {
+
+            }
+            ImGui.SameLine();
+            ImGui.Text("Snap Value");
+            ImGui.SameLine();
+            if (ImGui.InputFloat("##SnapValue", ref SnapValue))
+            {
+
+            }
+
             //Enable selection box unless moving
             SelectionBox.Enabled = IsMoving ? false : true;
 
@@ -136,8 +205,16 @@ namespace MapStudio.UI
             }
 
             //Draw through the node hiearchy and draw the keyed tracks
-            foreach (var node in Tree.TreeView.Nodes)
-                DrawCurve(node);
+            if (Tree !=  null)
+            {
+                foreach (var node in Tree.TreeView.Nodes)
+                    DrawCurve(node);
+            }
+            else if (SelectedTracks.Count > 0) //if no tree node is attached, draw using the selected track
+            {
+                foreach (var selectedTrack in SelectedTracks)
+                    DrawCurve(selectedTrack);
+            }
 
             //Draw selection boundary
             DrawSelectionBounds();
@@ -152,7 +229,7 @@ namespace MapStudio.UI
         //Draws a box around the selected dope keys for transforming
         private void DrawSelectionBounds()
         {
-            if (SelectedKeys.Count == 0)
+            if (SelectedKeys.Count <= 1)
                 return;
 
             CalculateSelection();
@@ -193,21 +270,23 @@ namespace MapStudio.UI
             if (Timeline.Height - 40 <= 0)
                 return;
 
-            if (SelectedTrack != track)
+            if (!SelectedTracks.Contains(track))
             {
-                SelectedTrack = track;
+                //Insert track into selection list
+                SelectedTracks.Clear();
+                SelectedTracks.Add(track);
+
                 OnTrackSelect(track);
             }
 
             //Check if the window has been clicked
-            bool clicked = ImGui.IsMouseDown(0) && ImGui.IsWindowFocused() && ImGui.IsWindowHovered() && !ImGui.IsAnyItemHovered();
+            bool clicked = ImGui.IsMouseClicked(0) && ImGui.IsWindowFocused() && ImGui.IsWindowHovered() && !ImGui.IsAnyItemHovered();
             //Get the position in screen coordinates for custom drawing
             var screenPos = ImGui.GetCursorScreenPos();
             //Total width from a frame value
             float frameWidth = Timeline.FramesToPixelsX(1f);
             //Starting cursor pos
             var curPos = ImGui.GetCursorPos();
-
 
             //Offset of the min frame range
             float offset = Timeline.FramesToPixelsX(Timeline.frameRangeMin);
@@ -222,8 +301,21 @@ namespace MapStudio.UI
             var valueLineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, 1));
             var lineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 1));
 
+            string trackName = track.Track.Name.ToLower();
+            if (trackName.EndsWith("x") || trackName.EndsWith("r"))
+                valueLineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1, 0, 0, 1));
+            if (trackName.EndsWith("y") || trackName.EndsWith("g"))
+                valueLineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0, 1, 0, 1));
+            if (trackName.EndsWith("z") || trackName.EndsWith("b"))
+                valueLineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 1, 1));
+            if (trackName.EndsWith("w") || trackName.EndsWith("a"))
+                valueLineColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.7f, 0.7f, 0.7f, 1));
+
+            int minFrame = (int)Timeline.frameRangeMin;
+            int maxFrame = (int)Timeline.frameRangeMax;
+
             //Display interpolated first
-            for (int i = 0; i < track.Anim.FrameCount; i++)
+            for (int i = minFrame; i < maxFrame; i++)
             {
                 Vector2 GetPos(int frame)
                 {
@@ -234,7 +326,43 @@ namespace MapStudio.UI
                     return screenPos + new Vector2(posX, posY);
                 }
 
-                ImGui.GetWindowDrawList().AddLine(GetPos(i), GetPos(i + 1), valueLineColor);
+                var p1 = GetPos(i);
+                var p2 = GetPos(i + 1);
+
+                if (track.Track.InterpolationType == STInterpoaltionType.Step)
+                {
+                    ImGui.GetWindowDrawList().AddLine(p1, new Vector2(p2.X, p1.Y), valueLineColor);
+                    ImGui.GetWindowDrawList().AddLine(new Vector2(p2.X, p1.Y), p2, valueLineColor);
+                }
+                else
+                    ImGui.GetWindowDrawList().AddLine(p1, p2, valueLineColor);
+            }
+
+
+            if (track is AnimationTree.TrackNodeVisibility)
+            {
+                float posX = curPos.X + 50;
+                float shiftCenterY = 7;
+
+                ImGui.SetCursorPos(new Vector2(posX, Timeline.ValueToY(0) - shiftCenterY));
+                ImGui.Text(IconManager.EYE_OFF_ICON.ToString());
+
+                ImGui.SetCursorPos(new Vector2(posX, Timeline.ValueToY(1) - shiftCenterY));
+                ImGui.Text(IconManager.EYE_ON_ICON.ToString());
+            }
+            if (track is AnimationTree.TextureTrackNode)
+            {
+                var t = track as AnimationTree.TextureTrackNode;
+                float posX = curPos.X + Timeline.FramesToPixelsX(0) - offset;
+
+                foreach (var key in t.Keys)
+                {
+                    int index = (int)key.Value;
+                    ImGui.SetCursorPos(new Vector2(posX, Timeline.ValueToY(index - 0.5f)));
+
+                    if (t.TextureList.Count > index)
+                        t.DrawImage(t.TextureList[index], Timeline.ValueUnitsToPixelsY(1));
+                }
             }
 
             //Draw keys and slopes
@@ -242,6 +370,21 @@ namespace MapStudio.UI
             {
                 if (track.Track.InterpolationType == STInterpoaltionType.Constant)
                     continue;
+
+                if (track.Track.InterpolationType == STInterpoaltionType.Hermite)
+                {
+                     if (!(keyFrame.KeyFrame is STHermiteKeyFrame))
+                    {
+                        var index = track.Track.KeyFrames.IndexOf(keyFrame.KeyFrame);
+
+                        keyFrame.KeyFrame = new STHermiteKeyFrame()
+                        {
+                            Value = keyFrame.Value,
+                            Frame = keyFrame.Frame,
+                        };
+                        track.Track.KeyFrames[index] = keyFrame.KeyFrame;
+                    }
+                }
 
                 var kf = keyFrame.KeyFrame;
 
@@ -260,12 +403,23 @@ namespace MapStudio.UI
                 ImGui.GetWindowDrawList().AddCircle(new Vector2(pos.X, pos.Y), 5,
                 ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)));
                 //Hit detection for selecting keys
-                float hitboxSize = 5;
+                float hitboxSize = 10;
+                float hitboxSlopeSize = 10;
+
                 var min = new Vector2(pos.X - hitboxSize, pos.Y - hitboxSize);
                 var max = new Vector2(pos.X + hitboxSize, pos.Y + hitboxSize);
 
                 keyFrame.Min = min;
                 keyFrame.Max = max;
+
+                //Only do box operation when more than 1 key is selected
+                bool isBoxSelection = track.Keys.Any(x => x.SelectedByBox) && this.SelectedKeys.Count > 1;
+
+                if (_ResizeMode == ResizeMode.None)
+                {
+                    if ((ImGui.IsMouseHoveringRect(min, max) && !IsMoving) || (IsMoving && keyFrame.IsSelected))
+                        ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeAll);
+                }
 
                 //Select via selection box
                 if (SelectionBox.IsActive)
@@ -284,9 +438,9 @@ namespace MapStudio.UI
                         SelectionChanged();
                     }
                 } //Select via mouse click
-                else if (!IsMoving && clicked && ImGui.IsMouseHoveringRect(min, max))
+                else if (clicked && ImGui.IsMouseHoveringRect(min, max) && !isBoxSelection)
                 {
-                    if (!ImGui.GetIO().KeyCtrl && !keyFrame.SelectedByBox)
+                    if (!ImGui.GetIO().KeyCtrl && (!isBoxSelection))
                     {
                         DeselectAll();
                         SelectionChanged();
@@ -306,22 +460,32 @@ namespace MapStudio.UI
                 float scaleFactorX = Timeline.FramesToPixelsX(1f);
                 float scaleFactorY = -Timeline.ValueUnitsToPixelsY(1f);
 
-                if (track.Track.InterpolationType == STInterpoaltionType.Hermite && kf is STHermiteKeyFrame)
+                bool showSlopes = AlwaysShowSlopes ? true : SelectedKeys.Contains(keyFrame) && SelectedKeys.Count <= 1;
+
+                if (track.Track.InterpolationType == STInterpoaltionType.Hermite && kf is STHermiteKeyFrame && showSlopes)
                 {
-                    var slopeIn = keyFrame.SlopeIn;
-                    var slopeOut = keyFrame.SlopeOut;
+                    var slopeIn = -keyFrame.SlopeIn;
+                    var slopeOut = -keyFrame.SlopeOut;
                     var tangentLength = 40f;
 
                     Vector2 cpIn = pos + Vector2.Normalize(new Vector2(scaleFactorX, slopeIn * scaleFactorY)) * -tangentLength;
                     Vector2 cpOut = pos + Vector2.Normalize(new Vector2(scaleFactorX, slopeOut * scaleFactorY)) * tangentLength;
 
-                    min = new Vector2(cpIn.X - hitboxSize, cpIn.Y - hitboxSize);
-                    max = new Vector2(cpIn.X + hitboxSize, cpIn.Y + hitboxSize);
+                    min = new Vector2(cpIn.X - hitboxSlopeSize, cpIn.Y - hitboxSlopeSize);
+                    max = new Vector2(cpIn.X + hitboxSlopeSize, cpIn.Y + hitboxSlopeSize);
+
+                    keyFrame.IsTangentInHovered = ImGui.IsMouseHoveringRect(min, max);
+
+
+                    if ((keyFrame.IsTangentInHovered) && !IsMoving || (IsMoving && keyFrame.IsTangentInSelected))
+                        ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
+
 
                     //Select via mouse click
-                    if (!IsMoving && clicked && ImGui.IsMouseHoveringRect(min, max))
+                    Console.WriteLine($"IsMoving {IsMoving} clicked {clicked} {keyFrame.IsTangentInHovered}");
+                    if (!IsMoving && clicked && keyFrame.IsTangentInHovered)
                     {
-                        if (!ImGui.GetIO().KeyCtrl && !keyFrame.SelectedByBox)
+                        if (!ImGui.GetIO().KeyCtrl && !isBoxSelection)
                         {
                             DeselectAll();
                             SelectionChanged();
@@ -338,13 +502,18 @@ namespace MapStudio.UI
                         IsMoving = true;
                     }
 
-                    min = new Vector2(cpOut.X - hitboxSize, cpOut.Y - hitboxSize);
-                    max = new Vector2(cpOut.X + hitboxSize, cpOut.Y + hitboxSize);
+                    min = new Vector2(cpOut.X - hitboxSlopeSize, cpOut.Y - hitboxSlopeSize);
+                    max = new Vector2(cpOut.X + hitboxSlopeSize, cpOut.Y + hitboxSlopeSize);
+
+                    keyFrame.IsTangentOutHovered = ImGui.IsMouseHoveringRect(min, max);
+
+                    if ((keyFrame.IsTangentOutHovered) && !IsMoving || (IsMoving && keyFrame.IsTangentOutSelected))
+                        ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
 
                     //Select via mouse click
                     if (!IsMoving && clicked && ImGui.IsMouseHoveringRect(min, max))
                     {
-                        if (!ImGui.GetIO().KeyCtrl && !keyFrame.SelectedByBox)
+                        if (!ImGui.GetIO().KeyCtrl && !isBoxSelection)
                         {
                             DeselectAll();
                             SelectionChanged();
@@ -398,11 +567,13 @@ namespace MapStudio.UI
         public void Undo()
         {
             UndoStack.Undo();
+            OnValueUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void Redo()
         {
             UndoStack.Redo();
+            OnValueUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void OnKeyDown(KeyEventInfo keyDown)
@@ -443,9 +614,10 @@ namespace MapStudio.UI
         {
             const float edgeSelectionSize = 10;
 
-            MouseEventInfo.MouseCursor = MouseEventInfo.Cursor.Arrow;
             if (_ResizeMode != ResizeMode.None)
-                MouseEventInfo.MouseCursor = MouseEventInfo.Cursor.ResizeEW;
+            {
+                ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
+            }
 
             if (SelectionBounding.Max.X - SelectionBounding.Min.X > 20)
             {
@@ -454,14 +626,14 @@ namespace MapStudio.UI
                     SelectionBounding.Max.X - edgeSelectionSize, SelectionBounding.Min.Y),
                     new Vector2(SelectionBounding.Max.X, SelectionBounding.Max.Y)))
                 {
-                    MouseEventInfo.MouseCursor = MouseEventInfo.Cursor.ResizeEW;
+                    ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                 }
                 //Selection box resizing (left side)
                 if (ImGui.IsMouseHoveringRect(new Vector2(
                     SelectionBounding.Min.X, SelectionBounding.Min.Y),
                     new Vector2(SelectionBounding.Min.X + edgeSelectionSize, SelectionBounding.Max.Y)))
                 {
-                 //   MouseEventInfo.MouseCursor = MouseEventInfo.Cursor.ResizeEW;
+                   // ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                 }
             }
 
@@ -476,8 +648,11 @@ namespace MapStudio.UI
                 float previousFrame = Timeline.XToFrame(mouseDownPos.X);
                 float previousValue = Timeline.YToValue(mouseDownPos.Y);
 
-                float diffX = (int)Math.Round(currentFrame - previousFrame);
+                float diffX = currentFrame - previousFrame;
                 float diffY = currentValue - previousValue;
+
+                if (SnapFrame != 0) diffX = MathF.Floor(diffX / SnapFrame) * SnapFrame;
+                if (SnapValue != 0) diffY = MathF.Floor(diffY / SnapValue) * SnapValue;
 
                 if (movementChanged && (diffX != 0 || diffY != 0)) {
                     movementChanged = false;
@@ -492,28 +667,67 @@ namespace MapStudio.UI
                             SelectedKeys.Min(x => x.Frame), 
                             SelectedKeys.Max(x => x.Frame), SelectedKeys);
 
-                    ResizeOp.Resize(currentFrame, SelectedKeys, _ResizeMode);
+                    if (_ResizeMode == ResizeMode.Right ||  _ResizeMode == ResizeMode.Left)
+                        ResizeOp.Resize(currentFrame, SnapFrame, SelectedKeys, _ResizeMode);
+                    if (_ResizeMode == ResizeMode.Up || _ResizeMode == ResizeMode.Down)
+                        ResizeOp.ResizeValue(currentValue, SnapValue, SelectedKeys, _ResizeMode);
+
+                    foreach (var track in SelectedTracks)
+                        track.OnFrameUpdated();
                 }
-                else if (diffX != 0 || diffY != 0)
+                else if (_ResizeMode == ResizeMode.None && (diffX != 0 || diffY != 0))
                 {
+                    //moving during undo/redo may need to regenerate pre drag keys
+                    if (PreDragFrames.Count != SelectedKeys.Count)
+                        SetupMoveOperation();
+
+                    if (PreDragValues.Count != SelectedKeys.Count)
+                        SetupMoveOperation();
+
                     //Move selected
                     for (int i = 0; i < SelectedKeys.Count; i++)
                     {
                         if (SelectedKeys[i].IsSelected)
                         {
+                            float frame = SelectedKeys[i].Frame;
+
                             SelectedKeys[i].Frame = PreDragFrames[i] + diffX;
                             SelectedKeys[i].KeyFrame.Value = PreDragValues[i] + diffY;
+
+                            if (frame != SelectedKeys[i].Frame)
+                                SelectedTracks[0].OnFrameUpdated();
+
+                            if (SelectedTracks.Count > 0)
+                            {
+                                if (SelectedTracks[0] is AnimationTree.TrackNodeVisibility)
+                                    SelectedKeys[i].KeyFrame.Value = Math.Clamp((int)SelectedKeys[i].KeyFrame.Value, 0, 1);
+                                if (SelectedTracks[0] is AnimationTree.TextureTrackNode)
+                                {
+                                    var track = (AnimationTree.TextureTrackNode)SelectedTracks[0];
+                                    SelectedKeys[i].KeyFrame.Value = Math.Clamp((int)SelectedKeys[i].KeyFrame.Value, 0, track.TextureList.Count - 1);
+                                }
+                            }
                         }
                         else if (SelectedKeys[i].IsTangentInSelected)
                         {
-                            SelectedKeys[i].SlopeIn = PreDragInSlopes[i] - ((currentValue - previousValue) / (currentFrame - previousFrame));
+                            //from mouse value space position to value/frame
+                            float slope = (mouseValue - SelectedKeys[i].Value) / (mouseFrame - SelectedKeys[i].Frame); ;
+                            SelectedKeys[i].SlopeIn = slope;
+                            if (KeyEventInfo.State.KeyAlt) //match opposing slope
+                                SelectedKeys[i].SlopeOut = slope;
                         }
                         else if (SelectedKeys[i].IsTangentOutSelected)
                         {
-                            SelectedKeys[i].SlopeOut = PreDragOutSlopes[i] - ((currentValue - previousValue) / (currentFrame - previousFrame));
+                            float slope = (mouseValue - SelectedKeys[i].Value) / (mouseFrame - SelectedKeys[i].Frame); ;
+                            SelectedKeys[i].SlopeOut = slope;
+                            if (KeyEventInfo.State.KeyAlt) //match opposing slope
+                                SelectedKeys[i].SlopeIn = slope;
                         }
                     }
                 }
+
+                if (diffX != 0 || diffY != 0)
+                    OnValueUpdated?.Invoke(this, EventArgs.Empty);
             }
             lastMousePos = new Vector2(mouseInfo.X, mouseInfo.Y);
         }
@@ -521,19 +735,70 @@ namespace MapStudio.UI
         class ResizeOperation
         {
             private float PreviousFrame;
+
             private float LeftFrame;
             private float RightFrame;
             private List<float> previousFrames = new List<float>();
+
+            private float PreviousValue;
+            private float DownValue;
+            private float UpValue;
+            private List<float> previousValues = new List<float>();
 
             public ResizeOperation(float previousFrame, float leftFrame, float rightFrame, List<AnimationTree.KeyNode> keys)
             {
                 PreviousFrame = previousFrame;
                 LeftFrame = leftFrame;
                 RightFrame = rightFrame;
+                DownValue = keys.Min(x => x.Value);
+                UpValue = keys.Max(x => x.Value);
                 previousFrames = keys.Select(x => x.Frame).ToList();
+                previousValues = keys.Select(x => x.Value).ToList();
             }
 
-            public void Resize(float currentFrame, List<AnimationTree.KeyNode> keys, ResizeMode mode)
+            public void ResizeValue(float currentValue, float snap, List<AnimationTree.KeyNode> keys, ResizeMode mode)
+            {
+                float diff = currentValue - PreviousValue;
+                //Resize selected
+                float newValue = PreviousValue + diff;
+
+                if (mode == ResizeMode.Up)
+                {
+                    float ratio = (float)newValue / (float)UpValue;
+
+                    for (int i = 0; i < keys.Count; i++)
+                    {
+                        if (keys[i].Value != DownValue) //don't adjust min value
+                        {
+                            float v = (float)previousValues[i] * ratio;
+                            if (snap != 0)
+                                v = MathF.Floor(v / snap) * snap;
+
+                            if (v > DownValue)
+                                keys[i].Value = v;
+                        }
+                    }
+                }
+                if (mode == ResizeMode.Down)
+                {
+                    float ratio = (float)newValue / (float)DownValue;
+
+                    for (int i = 0; i < keys.Count; i++)
+                    {
+                        if (keys[i].Value != UpValue) //don't adjust min value
+                        {
+                            float v = (float)previousValues[i] * ratio;
+                            if (snap != 0)
+                                v = MathF.Floor(v / snap) * snap;
+
+                            if (v > UpValue)
+                                keys[i].Value = v;
+                        }
+                    }
+                }
+            }
+
+            public void Resize(float currentFrame, float snap, List<AnimationTree.KeyNode> keys, ResizeMode mode)
             {
                 float diff = (int)Math.Round(currentFrame - PreviousFrame);
                 //Resize selected
@@ -547,7 +812,11 @@ namespace MapStudio.UI
                     {
                         if (keys[i].Frame != LeftFrame)
                         {
-                            int newFrame = (int)MathF.Max(((float)previousFrames[i] * ratio + 0.5f), 0);
+                            float newFrame = MathF.Max((float)previousFrames[i] * ratio, 0);
+
+                            if (snap != 0)
+                                newFrame = MathF.Floor(newFrame / snap) * snap;
+
                             if (newFrame > LeftFrame)
                                 keys[i].Frame = newFrame;
                         }
@@ -562,7 +831,11 @@ namespace MapStudio.UI
                         if (keys[i].Frame != RightFrame)
                         {
                             float value = previousFrames[i] == 0 ? newFrameCount : previousFrames[i] * ratio + 0.5f;
-                            int newFrame = (int)MathF.Max((value), 0);
+                            float newFrame = MathF.Max(value, 0);
+
+                            if (snap != 0)
+                                newFrame = MathF.Floor(newFrame / snap) * snap;
+
                             if (newFrame < RightFrame)
                                 keys[i].Frame = newFrame;
                         }
@@ -576,13 +849,42 @@ namespace MapStudio.UI
             mouseDownPos = new Vector2(mouseInfo.X, mouseInfo.Y);
 
             _mouseDown = true;
+
+            //add key value
+            if (KeyEventInfo.State.KeyCtrl)
+            {
+                float mouseFrame = Timeline.XToFrame(mouseInfo.X);
+                float mouseValue = Timeline.YToValue(mouseInfo.Y);
+
+                if (SelectedTracks.Count == 1)
+                {
+                    mouseFrame = MathF.Round(mouseFrame);
+
+                    if (SelectedTracks[0] is AnimationTree.TrackNodeVisibility)
+                        mouseValue = Math.Clamp((int)mouseValue, 0, 1);
+                    if (SelectedTracks[0] is AnimationTree.TextureTrackNode)
+                    {
+                        var track = (AnimationTree.TextureTrackNode)SelectedTracks[0];
+                        mouseValue = Math.Clamp((int)mouseValue, 0, track.TextureList.Count - 1);
+                    }
+
+                    var kf = SelectedTracks[0].InsertOrUpdateKeyValue(mouseFrame, mouseValue);
+                    if (kf != null)
+                    {
+                        DeselectAll();
+                        kf.IsSelected = true;
+                    }
+                }
+            }
+
             //Selection box movement
-            if(SelectedKeys.Count > 0)
+            if (SelectedKeys.Count > 0)
             {
                 if (ImGui.IsMouseHoveringRect(SelectionBounding.Min, SelectionBounding.Max))
                     IsMoving = true;
 
                 const float edgeSelectionSize = 10;
+                const float edgeSelectionValueSize = 1;
 
                 if (SelectionBounding.Max.X - SelectionBounding.Min.X > 20)
                 {
@@ -599,6 +901,27 @@ namespace MapStudio.UI
                         new Vector2(SelectionBounding.Min.X + edgeSelectionSize, SelectionBounding.Max.Y)))
                     {
                      //   _ResizeMode = ResizeMode.Left;
+                    }
+                }
+                if (SelectionBounding.Max.Y - SelectionBounding.Min.Y > 20)
+                {
+                    //Selection box resizing (up side)
+                    if (ImGui.IsMouseHoveringRect(
+                        new Vector2(
+                        SelectionBounding.Min.X, 
+                        SelectionBounding.Max.Y - edgeSelectionValueSize),
+                    new Vector2(
+                        SelectionBounding.Max.X,
+                        SelectionBounding.Max.Y)))
+                    {
+                        _ResizeMode = ResizeMode.Up;
+                    }
+                    //Selection box resizing (down side)
+                    if (ImGui.IsMouseHoveringRect(new Vector2(
+                    SelectionBounding.Min.X, SelectionBounding.Min.Y),
+                    new Vector2(SelectionBounding.Max.X, SelectionBounding.Min.Y + edgeSelectionValueSize)))
+                    {
+                        _ResizeMode = ResizeMode.Down;
                     }
                 }
             }
@@ -637,6 +960,8 @@ namespace MapStudio.UI
                 key.TryRemoveFromTrack();
 
             SelectedKeys.Clear();
+
+            OnValueUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void SelectionChanged() 
@@ -719,6 +1044,8 @@ namespace MapStudio.UI
             None,
             Left,
             Right,
+            Up,
+            Down,
         }
 
         class KeyDeleteOperation : IRevertable

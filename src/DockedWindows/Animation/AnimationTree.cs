@@ -7,6 +7,7 @@ using Toolbox.Core.Animations;
 using CurveEditorLibrary;
 using ImGuiNET;
 using Toolbox.Core;
+using static GLFrameworkEngine.CameraFrame;
 
 namespace MapStudio.UI
 {
@@ -36,6 +37,16 @@ namespace MapStudio.UI
         /// </summary>
         public TreeView TreeView = new TreeView();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<TrackNode> SelectedTracks = new List<TrackNode>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<TreeNode> SelectedGroups = new List<TreeNode>();
+
         //timeline
         AnimationTimelineControl CurveEditor;
 
@@ -54,6 +65,16 @@ namespace MapStudio.UI
                     return;
 
                 propertyWindow.SelectedObject = node;
+
+                SelectedTracks.Clear();
+                SelectedGroups.Clear();
+                foreach (var n in TreeView.GetSelectedNodes())
+                {
+                    if (n is TrackNode)
+                        SelectedTracks.Add((TrackNode)n);
+                    if (n.Tag is STAnimGroup)
+                        SelectedGroups.Add(n);
+                }
             };
             TreeView.CanDisplayNode = (node) =>
             {
@@ -72,6 +93,8 @@ namespace MapStudio.UI
 
         public void Load(List<STAnimation> anims)
         {
+            SelectedTracks.Clear();
+            SelectedGroups.Clear();
             TreeView.Nodes.Clear();
             foreach (var anim in anims)
                 LoadAnimation(anim);
@@ -111,6 +134,8 @@ namespace MapStudio.UI
         public void Dispose()
         {
             TreeView.Nodes.Clear();
+            SelectedTracks.Clear();
+            SelectedGroups.Clear();
         }
 
         public class AnimNode : TreeNode
@@ -262,6 +287,76 @@ namespace MapStudio.UI
         }
 
         /// <summary>
+        /// Represents a track node for editing values as degrees.
+        /// The given track should have the values output as radians.
+        /// </summary>
+        public class TrackNodeVisibility : TrackNode
+        {
+            public TrackNodeVisibility(STAnimation anim, STAnimationTrack track) : base(anim, track)
+            {
+
+            }
+
+            public override void DrawDopesheetKey(KeyNode keyFrame, Vector2 pos, Vector4 color)
+            {
+                base.DrawDopesheetKey(keyFrame, pos, color);
+                return;
+
+                //Eye to represent a keyed value
+                bool toggle = keyFrame.Value != 0;
+
+                string icon = (toggle ? IconManager.EYE_ON_ICON : IconManager.EYE_OFF_ICON).ToString();
+
+                var disableColor = new Vector4(0.8f, 0.0f, 0.0f, 1f);
+                var clr = toggle || keyFrame.IsSelected ? color : disableColor;
+
+                ImGui.SetCursorScreenPos(pos);
+
+                ImGuiHelper.IncrementCursorPosY(-6);
+                ImGui.TextColored(clr, icon);
+                /*
+                                ImGui.GetWindowDrawList().AddCircleFilled(
+                                    new Vector2(pos.X, pos.Y), 5,
+                                    ImGui.ColorConvertFloat4ToU32(color));
+                                */
+                //Add a border around the circle
+                //  ImGui.GetWindowDrawList().AddCircle(new Vector2(pos.X, pos.Y), 5,
+                //ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)));
+            }
+
+            public override void RenderNode()
+            {
+                ImGui.Text(this.Header);
+
+                ImGui.NextColumn();
+
+                var color = ImGui.GetStyle().Colors[(int)ImGuiCol.Text];
+                //Display keyed values differently
+                bool isKeyed = Track.KeyFrames.Any(x => x.Frame == Anim.Frame);
+                if (isKeyed)
+                    color = KEY_COLOR;
+
+                ImGui.PushStyleColor(ImGuiCol.Text, color);
+
+                //Display the current track value
+                bool value = Track.GetFrameValue(Anim.Frame) != 0;
+                //Span the whole column
+                ImGui.PushItemWidth(ImGui.GetColumnWidth() - 3);
+                bool edited = ImGui.Checkbox($"##{Track.Name}_frame", ref value);
+                bool isActive = ImGui.IsItemDeactivated();
+                ImGui.PopItemWidth();
+
+                //Insert key value with degrees back to radians
+                if (edited || (isActive && ImGui.IsKeyDown((int)ImGuiKey.Enter)))
+                    InsertOrUpdateKeyValue(value ? 1 : 0);
+
+                ImGui.PopStyleColor();
+
+                ImGui.NextColumn();
+            }
+        }
+
+        /// <summary>
         /// Represents a track node for textures.
         /// </summary>
         public class TextureTrackNode : TrackNode
@@ -270,6 +365,11 @@ namespace MapStudio.UI
 
             public TextureTrackNode(STAnimation anim, STAnimationTrack track) : base(anim, track)
             {
+            }
+
+            public virtual void DrawImage(string name, float size)
+            {
+
             }
         }
 
@@ -374,6 +474,23 @@ namespace MapStudio.UI
                 };
             }
 
+            public virtual void DrawDopesheetKey(KeyNode keyFrame, Vector2 pos, Vector4 color)
+            {
+                //Circle to represent a keyed value
+                ImGui.GetWindowDrawList().AddCircleFilled(
+                    new Vector2(pos.X, pos.Y), 5,
+                    ImGui.ColorConvertFloat4ToU32(color));
+                //Add a border around the circle
+                ImGui.GetWindowDrawList().AddCircle(new Vector2(pos.X, pos.Y), 5,
+                ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)));
+            }
+
+            public void OnFrameUpdated()
+            {
+                Keys = Keys.OrderBy(x => x.Frame).ToList();
+                this.Track.KeyFrames = this.Track.KeyFrames.OrderBy(x => x.Frame).ToList();
+            }
+
             public virtual void RenderKeyTableUI()
             {
                 ImGui.BeginColumns("##keyList", 2);
@@ -385,13 +502,20 @@ namespace MapStudio.UI
                     bool edited = false;
                     edited |= ImGui.DragFloat($"Frame##{i}", ref frame, 1, 0, Anim.FrameCount);
                     ImGui.NextColumn();
+
                     edited |= ImGui.DragFloat($"Value##{i}", ref value);
                     ImGui.NextColumn();
 
                     if (edited)
                     {
+                        bool isFrameUpdated = Keys[i].Frame != frame;
+
                         Keys[i].Frame = frame;
                         Keys[i].KeyFrame.Value = value;
+
+                        if (isFrameUpdated)
+                            OnFrameUpdated();
+
                         if (Keys[i].KeyFrame is STLinearKeyFrame)
                             AdjustLinearDeltas(Track);
                     }
@@ -437,7 +561,7 @@ namespace MapStudio.UI
                 UpdateValue = true;
             }
 
-            public void InsertOrUpdateKeyValue(float frame, float value)
+            public KeyNode InsertOrUpdateKeyValue(float frame, float value)
             {
                 Anim.IsEdited = true;
 
@@ -487,13 +611,15 @@ namespace MapStudio.UI
                             throw new Exception($"Unsupported interpolation type! {Track.InterpolationType}");
                     }
                     if (keyFrame == null)
-                        return;
+                        return null;
 
                     Track.Insert(keyFrame);
                     if (keyFrame is STLinearKeyFrame)
                         AdjustLinearDeltas((STLinearKeyFrame)keyFrame, Anim.Frame);
 
-                    Keys.Add(new KeyNode(this, keyFrame));
+                    //Note KeyNode will usually be auto added from insert event in Track.Insert()
+                    if (!Keys.Any(x => x.KeyFrame == keyFrame))
+                        Keys.Add(new KeyNode(this, keyFrame));
                 }
                 else
                 {
@@ -502,6 +628,9 @@ namespace MapStudio.UI
                     if (key is STLinearKeyFrame)
                         AdjustLinearDeltas((STLinearKeyFrame)key, Anim.Frame);
                 }
+                OnFrameUpdated();
+
+                return this.Keys.FirstOrDefault(x => x.Frame == frame);
             }
 
             private void AdjustLinearDeltas(STAnimationTrack track)
@@ -583,6 +712,14 @@ namespace MapStudio.UI
             public Vector2 Max = new Vector2();
             public Vector2 Min = new Vector2();
 
+            //Min/max UI element size
+            public Vector2 SlopeInMax = new Vector2();
+            public Vector2 SlopeInMin = new Vector2();
+
+            //Min/max UI element size
+            public Vector2 SlopeOutMax = new Vector2();
+            public Vector2 SlopeOutMin = new Vector2();
+
             /// <summary>
             /// Determines if the key was selected by a selection box or not.
             /// This is needed for invert selection.
@@ -595,6 +732,10 @@ namespace MapStudio.UI
             public bool IsSelected { get; set; }
             public bool IsTangentInSelected { get; set; }
             public bool IsTangentOutSelected { get; set; }
+
+            public bool Hovered;
+            public bool IsTangentInHovered;
+            public bool IsTangentOutHovered;
 
             //parent track node
             private TrackNode TrackNode;
@@ -646,6 +787,11 @@ namespace MapStudio.UI
                 //Remove from GUI
                 if (!TrackNode.Keys.Contains(this))
                     TrackNode.Keys.Add(this);
+
+                //Sort by frame
+                Track.KeyFrames = Track.KeyFrames.OrderBy(x => x.Frame).ToList();
+                TrackNode.Keys = TrackNode.Keys.OrderBy(x => x.Frame).ToList();
+
                 UpdateValue = true;
             }
         }

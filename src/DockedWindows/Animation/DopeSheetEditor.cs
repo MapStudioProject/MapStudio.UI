@@ -7,6 +7,10 @@ using Toolbox.Core.Animations;
 using CurveEditorLibrary;
 using GLFrameworkEngine;
 using UIFramework;
+using Syroot.BinaryData;
+using Newtonsoft.Json.Linq;
+using static MapStudio.UI.AnimationTree;
+using static GLFrameworkEngine.CameraFrame;
 
 namespace MapStudio.UI
 {
@@ -188,6 +192,11 @@ namespace MapStudio.UI
 
         private void DrawDopeSheet(UIFramework.TreeNode node, ref float cursorPosY)
         {
+            if (node is TrackNodeVisibility)
+                DrawVisSheet((TrackNodeVisibility)node, cursorPosY);
+            if (node is TextureTrackNode)
+                DrawTexSheet((TextureTrackNode)node, cursorPosY);
+
             //Draw the dope sheet according to the tree hiearchy
             if (node is AnimationTree.TrackNode)
             {
@@ -200,7 +209,7 @@ namespace MapStudio.UI
                     return;
                 }
 
-                DrawDopeSheet(trackNode.Keys, cursorPosY);
+                DrawDopeSheet(trackNode, trackNode.Keys, cursorPosY);
             }
             //Draw color groups using a colored bar around the sheet
             if (node is AnimationTree.ColorGroupNode)
@@ -214,6 +223,86 @@ namespace MapStudio.UI
             {
                 foreach (var c in node.Children)
                     DrawDopeSheet(c, ref cursorPosY);
+            }
+        }
+
+        private void DrawTexSheet(AnimationTree.TextureTrackNode trackNode, float cursorPosY)
+        {
+            //Timeline resized too small, don't display
+            if (Timeline.Height - 40 <= 0)
+                return;
+
+            ImGui.SetCursorPosY(cursorPosY);
+
+            //Starting cursor pos
+            var curPos = ImGui.GetCursorPos();
+            float height = ImGui.GetFrameHeight() - 2;
+            int width = (int)(this.Timeline.Width);
+
+            //size of frame in pixels
+            float frameWidth = Timeline.FramesToPixelsX(1f);
+            //Offset of the min frame range
+            float offset = Timeline.FramesToPixelsX(Timeline.frameRangeMin);
+
+            //Draw each key in between
+            for (int i = 0; i < trackNode.Keys.Count; i++)
+            {
+                float frame = trackNode.Track.KeyFrames[i].Frame;
+                var pX = curPos.X + frame * frameWidth - offset;
+
+                var index = (int)trackNode.Track.KeyFrames[i].Value;
+
+                ImGui.SetCursorPos(new Vector2(pX, cursorPosY));
+
+                if (trackNode.TextureList.Count > index)
+                    trackNode.DrawImage(trackNode.TextureList[index], ImGui.GetFrameHeight());
+            }
+        }
+
+        private void DrawVisSheet(AnimationTree.TrackNodeVisibility trackNode, float cursorPosY)
+        {
+            //Timeline resized too small, don't display
+            if (Timeline.Height - 40 <= 0)
+                return;
+
+            ImGui.SetCursorPosY(cursorPosY);
+
+            //Starting cursor pos
+            var curPos = ImGui.GetCursorScreenPos();
+            //size of frame in pixels
+            float frameWidth = Timeline.FramesToPixelsX(1f);
+            //Offset of the min frame range
+            float offset = Timeline.FramesToPixelsX(Timeline.frameRangeMin);
+
+            //Draw each key in between
+            for (int i = 0; i < trackNode.Keys.Count; i++)
+            {
+                //pos of next key
+                float GetPosX(int i)
+                {
+                    if (i >= trackNode.Keys.Count)
+                        return Timeline.frameRangeMax * frameWidth - offset;
+
+                    float frame = trackNode.Track.KeyFrames[i].Frame;
+                    return frame * frameWidth - offset;
+                }
+
+                //current frame pos
+                var p1X = curPos.X + GetPosX(i);
+                //next frame pos
+                var p2X = curPos.X + GetPosX(i + 1);
+                //start/end positions
+                var p1Y = curPos.Y;
+                var p2Y = curPos.Y + ImGui.GetFrameHeight() - 2;
+
+                //color for when vis is present and when toggled off
+                Vector4 color = new Vector4(1, 1, 1, 0.5f);
+                if (trackNode.Keys[i].Value == 0)
+                    color = new Vector4(0.2f, 0.2f, 0.2f, 0f);
+
+                ImGui.GetWindowDrawList().AddRectFilled(
+                    new Vector2(p1X, p1Y), new Vector2(p2X, p2Y),
+                    ImGui.ColorConvertFloat4ToU32(color));
             }
         }
 
@@ -272,7 +361,7 @@ namespace MapStudio.UI
             colorNode.ColorSheet.Reload(width, height, data);
         }
 
-        public void DrawDopeSheet(List<AnimationTree.KeyNode> keyFrames, float cursorPosY)
+        public void DrawDopeSheet(AnimationTree.TrackNode trackNode, List<AnimationTree.KeyNode> keyFrames, float cursorPosY)
         {
             //Timeline resized too small, don't display
             if (Timeline.Height - 40 <= 0)
@@ -309,13 +398,8 @@ namespace MapStudio.UI
 
                 //Draw at the frame position
                 var pos = screenPos + new Vector2(keyFrame.Frame * frameWidth - offset, height / 2);
-                //Circle to represent a keyed value
-                ImGui.GetWindowDrawList().AddCircleFilled(
-                    new Vector2(pos.X, pos.Y), 5,
-                    ImGui.ColorConvertFloat4ToU32(color));
-                //Add a border around the circle
-                ImGui.GetWindowDrawList().AddCircle(new Vector2(pos.X, pos.Y), 5,
-                ImGui.ColorConvertFloat4ToU32(new Vector4(0, 0, 0, 1)));
+                trackNode.DrawDopesheetKey(keyFrame, pos, color);
+
                 //Hit detection for selecting keys
                 float hitboxSize = 5;
                 var min = new Vector2(pos.X - hitboxSize, pos.Y - hitboxSize);
@@ -411,9 +495,11 @@ namespace MapStudio.UI
         {
             const float edgeSelectionSize = 10;
 
-            MouseEventInfo.MouseCursor = MouseEventInfo.Cursor.Arrow;
+
             if (_ResizeMode != ResizeMode.None)
-                MouseEventInfo.MouseCursor = MouseEventInfo.Cursor.ResizeEW;
+            {
+                ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
+            }
 
             if (SelectionBounding.Max.X - SelectionBounding.Min.X > 20)
             {
@@ -422,14 +508,14 @@ namespace MapStudio.UI
                     SelectionBounding.Max.X - edgeSelectionSize, SelectionBounding.Min.Y),
                     new Vector2(SelectionBounding.Max.X, SelectionBounding.Max.Y)))
                 {
-                    MouseEventInfo.MouseCursor = MouseEventInfo.Cursor.ResizeEW;
+                    ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                 }
                 //Selection box resizing (left side)
                 if (ImGui.IsMouseHoveringRect(new Vector2(
                     SelectionBounding.Min.X, SelectionBounding.Min.Y),
                     new Vector2(SelectionBounding.Min.X + edgeSelectionSize, SelectionBounding.Max.Y)))
                 {
-                 //   MouseEventInfo.MouseCursor = MouseEventInfo.Cursor.ResizeEW;
+                   // ImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEW);
                 }
             }
 
@@ -545,7 +631,7 @@ namespace MapStudio.UI
                         SelectionBounding.Min.X, SelectionBounding.Min.Y),
                         new Vector2(SelectionBounding.Min.X + edgeSelectionSize, SelectionBounding.Max.Y)))
                     {
-                     //   _ResizeMode = ResizeMode.Left;
+                       // _ResizeMode = ResizeMode.Left;
                     }
                 }
             }
