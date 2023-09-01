@@ -291,10 +291,9 @@ namespace MapStudio.UI
             {
                 if (ImGui.BeginChild("timeline_menu", new System.Numerics.Vector2(ImGui.GetColumnWidth(), 50), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))
                 {
-                    DrawDopeSheetTimeline();
+                    AnimCurveEditor.RenderMenu();
                 }
                 ImGui.EndChild();
-                CurveEditor.Render();
             }
 
             if (ImGui.BeginChild("timeline_child1", new System.Numerics.Vector2(ImGui.GetColumnWidth(), size.Y - posY - propertyMenuHeight - 50), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse))

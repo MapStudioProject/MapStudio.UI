@@ -163,40 +163,45 @@ namespace MapStudio.UI
             TrackSelected?.Invoke(track, EventArgs.Empty);
         }
 
+        public void RenderMenu()
+        {
+            ImGui.BeginMenuBar();
+
+            if (ImGui.BeginMenu("Snap"))
+            {
+                ImGui.Text("Snap Frame  ");
+                ImGui.SameLine();
+
+                ImGui.PushItemWidth(100);
+                if (ImGui.InputFloat("##SnapFrame", ref SnapFrame))
+                {
+
+                }
+                ImGui.PopItemWidth();
+
+                ImGui.Text("Snap Value  ");
+                ImGui.SameLine();
+
+                ImGui.PushItemWidth(100);
+                if (ImGui.InputFloat("##SnapValue", ref SnapValue))
+                {
+
+                }
+
+                ImGui.EndMenu();
+            }
+
+
+            ImGui.PopItemWidth();
+
+            ImGui.EndMenuBar();
+        }
+
         /// <summary>
         /// Draw the dope sheet.
         /// </summary>
         public void Render()
         {
-            if (ImGui.Button("   \uf55b   "))
-            {
-
-            }
-            ImGui.SameLine();
-            if (ImGui.Button("   \uf1e0   "))
-            {
-
-            }
-            ImGui.SameLine();
-            if (ImGui.Button("   \ue289   "))
-            {
-
-            }
-            ImGui.SameLine();
-            ImGui.Text("Snap Frame");
-            ImGui.SameLine();
-            if (ImGui.InputFloat("##SnapFrame", ref SnapFrame))
-            {
-
-            }
-            ImGui.SameLine();
-            ImGui.Text("Snap Value");
-            ImGui.SameLine();
-            if (ImGui.InputFloat("##SnapValue", ref SnapValue))
-            {
-
-            }
-
             //Enable selection box unless moving
             SelectionBox.Enabled = IsMoving ? false : true;
 
