@@ -167,6 +167,11 @@ namespace MapStudio.UI
                     });
                 }));
             }
+
+            public void UpdateFrameCounter()
+            {
+                UpdateFrameCount = true;
+            }
         }
 
         /// <summary>

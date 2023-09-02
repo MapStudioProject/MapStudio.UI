@@ -199,7 +199,7 @@ namespace MapStudio.UI
 
                 if (CurrentAnimations[i].Loop || ForceLoop)
                 {
-                    var lastFrame = CurrentAnimations[i].FrameCount;
+                    var lastFrame = Math.Max(CurrentAnimations[i].FrameCount, 0);
                     while (animFrameNum > lastFrame)
                         animFrameNum -= lastFrame + 1;
                 }
