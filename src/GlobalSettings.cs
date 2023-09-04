@@ -110,7 +110,7 @@ namespace MapStudio.UI
         /// </summary>
         public void ReloadTheme()
         {
-            var theme = ThemeHandler.Themes.FirstOrDefault(x => x.Name == Program.Theme);
+            var theme = ThemeHandler.ThemeFilePaths.FirstOrDefault(x => Path.GetFileNameWithoutExtension(x) == Program.Theme);
             if (theme != null)
                 ThemeHandler.UpdateTheme(theme);
         }

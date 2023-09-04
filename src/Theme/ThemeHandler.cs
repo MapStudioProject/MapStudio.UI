@@ -14,7 +14,7 @@ namespace MapStudio.UI
     {
         public virtual string Name { get; set; }
 
-        public static List<ThemeHandler> Themes = new List<ThemeHandler>();
+        public static List<string> ThemeFilePaths = new List<string>();
 
         public virtual Vector4 Text { get; set; }
         public virtual Vector4 WindowBg { get; set; }
@@ -46,7 +46,6 @@ namespace MapStudio.UI
         public virtual Vector4 NavHighlight { get; set; }
         public virtual Vector4 Error { get; set; }
         public virtual Vector4 Warning { get; set; }
-
         public static Vector4 ActiveTextHighlight { get; set; }
         public static Vector4 HyperLinkText { get; set; }
 
@@ -55,6 +54,11 @@ namespace MapStudio.UI
         public ThemeHandler()
         {
  
+        }
+
+        public static void UpdateTheme(string filePath)
+        {
+            UpdateTheme(JsonConvert.DeserializeObject<ThemeHandler>(File.ReadAllText(filePath)));
         }
 
         /// <summary>
@@ -108,20 +112,10 @@ namespace MapStudio.UI
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            Themes.Clear();
+            ThemeFilePaths.Clear();
             foreach (var theme in Directory.GetFiles(folder)) {
-               Themes.Add(JsonConvert.DeserializeObject<ThemeHandler>(File.ReadAllText(theme)));
+               ThemeFilePaths.Add(theme);
             }
-        }
-
-        public static void Save()
-        {
-            string folder = Path.Combine(Toolbox.Core.Runtime.ExecutableDir,"Lib","Themes");
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
-
-            foreach (var theme in Themes)
-                theme.Export(Path.Combine(folder,$"{theme.Name}.json"));
         }
 
         public void Export(string fileName)

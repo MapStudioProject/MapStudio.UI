@@ -135,9 +135,9 @@ namespace MapStudio.UI
             string currentThemeName = Settings.Program.Theme.ToString();
             if (ImGui.BeginCombo(TranslationSource.GetText("THEME"), TranslationSource.GetText(currentThemeName)))
             {
-                foreach (var colorTheme in ThemeHandler.Themes)
+                foreach (var colorTheme in ThemeHandler.ThemeFilePaths)
                 {
-                    string themeName = colorTheme.Name;
+                    string themeName = Path.GetFileNameWithoutExtension(colorTheme);
                     string name = TranslationSource.GetText(themeName);
                     bool selected = themeName == currentThemeName;
                     if (ImGui.Selectable(name, selected))
@@ -145,8 +145,8 @@ namespace MapStudio.UI
                         //Set the current theme instance
                         ThemeHandler.UpdateTheme(colorTheme);
 
-                        Settings.Program.Theme = colorTheme.Name;
-                        Settings.Save();
+                        GlobalSettings.Current.Program.Theme = themeName;
+                        GlobalSettings.Current.Save();
                     }
                     if (selected)
                         ImGui.SetItemDefaultFocus();
