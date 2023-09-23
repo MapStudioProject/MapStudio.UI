@@ -45,6 +45,9 @@
     <Reference Include="ImGui.NET">
       <HintPath>Externals\ImGui.NET.dll</HintPath>
     </Reference>
+    <Reference Include="ImGuiColorTextEditNet">
+      <HintPath>Externals\ImGuiColorTextEditNet.dll</HintPath>
+    </Reference>
     <Reference Include="IONET">
       <HintPath>Externals\IONET.dll</HintPath>
       <Private>False</Private>
