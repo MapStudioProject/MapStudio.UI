@@ -94,6 +94,34 @@ namespace MapStudio.UI
             }
         }
 
+        /// <summary>
+        /// Draws a file editor preview when in an archive.
+        /// </summary>
+        public virtual void DrawArchiveFileEditor()
+        {
+
+        }
+
+        private string Text = "";
+
+        public virtual string ToTextEditor() => "";
+
+        public virtual void SaveTextEditor(string text) 
+        {
+
+        }
+
+        /// <summary>
+        /// Draws a text editor preview when in an archive.
+        /// </summary>
+        public virtual void DrawArchiveTextEditor()
+        {
+            if (string.IsNullOrEmpty(Text))
+                Text = ToTextEditor();
+
+            ImGui.InputTextMultiline("##textEditor", ref Text, 0x1000, ImGui.GetWindowSize());
+        }
+
         public virtual void DrawMainMenuBar()
         {
 

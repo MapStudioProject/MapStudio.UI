@@ -214,6 +214,18 @@ namespace MapStudio.UI
             return GLTexture2D.FromBitmap(bitmap);
         }
 
+        public Image<Rgba32> SaveAsScreenshot(ViewportRenderer renderer, Camera camera, int width, int height, bool enableAlpha = false)
+        {
+            //Save into an fbo that supports an alpha channel
+            Framebuffer fbo = new Framebuffer(FramebufferTarget.Framebuffer,
+             width, height, PixelInternalFormat.Rgba16f, 1);
+
+            var bitmap = renderer.SaveAsScreenshot(fbo, camera, width, height, enableAlpha);
+            fbo.Dispose();
+
+            return bitmap;
+        }
+
         public Image<Rgba32> SaveAsScreenshot(ViewportRenderer renderer, int width, int height, bool enableAlpha = false) {
             //Save into an fbo that supports an alpha channel
             Framebuffer fbo = new Framebuffer(FramebufferTarget.Framebuffer,
@@ -241,6 +253,8 @@ namespace MapStudio.UI
 
                 Workspace.ActiveWorkspace?.OnMouseDown(mouseInfo);
             }
+
+            Workspace.ActiveWorkspace?.OnMouseMove(mouseInfo);
 
             if (ImGui.IsMouseReleased(ImGuiMouseButton.Left) ||
                ImGui.IsMouseReleased(ImGuiMouseButton.Right) ||

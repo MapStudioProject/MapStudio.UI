@@ -8,7 +8,7 @@ namespace MapStudio.UI
 {
     public class IconManager
     {
-        static Dictionary<string, int> Icons = new Dictionary<string, int>();
+        public static Dictionary<string, int> Icons = new Dictionary<string, int>();
 
         //Open Font Icons
         public const char MATERIAL_MASK_ICON = '\ue067';

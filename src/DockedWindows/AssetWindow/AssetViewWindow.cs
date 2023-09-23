@@ -40,7 +40,9 @@ namespace MapStudio.UI
         public AssetItem SelectedAsset
         {
             get { return selectedAsset; }
-            set { selectedAsset = value; }
+            set {
+                selectedAsset = value;
+            }
         }
 
         private AssetItem selectedAsset = null;
@@ -59,6 +61,8 @@ namespace MapStudio.UI
 
         private IAssetLoader ActiveCategory = null;
         private IAssetViewFileTypeList FileTypeList = null;
+
+        public Action SelectionChanged;
 
         public AssetViewWindow(DockSpaceWindow parent) : base(parent)
         {
@@ -433,8 +437,12 @@ namespace MapStudio.UI
                         }
 
                         if (select) {
-                            selectedAsset = obj;
-                        }
+                            if (selectedAsset != obj)
+                            {
+                                selectedAsset = obj;
+                                SelectionChanged?.Invoke();
+                            }
+                         }
                         if (isDoubleClicked)
                             doubleClickedAsset = obj;
 
@@ -664,6 +672,8 @@ namespace MapStudio.UI
         public bool Favorited = false;
 
         public object Tag { get; set; }
+
+        public Action PropertyUI = null;
 
         public string DisplayName { get; internal set; }
 

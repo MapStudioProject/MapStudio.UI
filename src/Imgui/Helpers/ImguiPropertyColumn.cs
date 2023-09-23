@@ -62,6 +62,20 @@ namespace MapStudio.UI
             return edit;
         }
 
+
+        public static bool SliderInt(string label, ref int value, int min, int max)
+        {
+            Label(label);
+
+            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
+            bool edit = ImGui.SliderInt($"##{label}", ref value, min, max);
+            ImGui.PopItemWidth();
+
+            ImGui.NextColumn();
+
+            return edit;
+        }
+
         public static bool SliderFloat(string label, ref float value, float min, float max)
         {
             Label(label);
@@ -133,6 +147,46 @@ namespace MapStudio.UI
             ImGui.PopItemWidth();
 
             ImGui.NextColumn();
+
+            return edit;
+        }
+
+        public static bool DragSByte(string label, ref sbyte value)
+        {
+            int v = value;
+            bool edit = DragInt(label, ref v);
+            if (edit)
+                value = (sbyte)v;
+
+            return edit;
+        }
+
+        public static bool DragByte(string label, ref byte value)
+        {
+            int v = value;
+            bool edit = DragInt(label, ref v);
+            if (edit)
+                value = (byte)v;
+
+            return edit;
+        }
+
+        public static bool DragShort(string label, ref short value)
+        {
+            int v = value;
+            bool edit = DragInt(label, ref v);
+            if (edit)
+                value = (short)v;
+
+            return edit;
+        }
+
+        public static bool DragUShort(string label, ref ushort value)
+        {
+            int v = value;
+            bool edit = DragInt(label, ref v);
+            if (edit)
+                value = (ushort)v;
 
             return edit;
         }

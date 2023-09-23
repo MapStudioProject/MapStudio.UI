@@ -22,23 +22,25 @@ namespace UIFramework
         ProcessLoading ProcessLoading = null;
 
         public Framework(MainWindow window, GraphicsMode gMode, string asssemblyVersion,
-            string name = "TRACK_STUDIO", int width = 1600, int height = 900) : base(width, height, gMode,
+            string name = "TRACK_STUDIO", int width = 1100, int height = 620) : base(width, height, gMode,
                              TranslationSource.GetText(name),
                              GameWindowFlags.Default)
         {
             MainWindow = window;
             window.Init(this);
 
+            try
+            {
+                WindowsThemeUtil.Init(this.WindowInfo.Handle);
+            }
+            catch
+            {
+
+            }
+
             var Thread = new Thread((ThreadStart)(() =>
             {
-                try
-                {
-                    WindowsThemeUtil.Init(this.WindowInfo.Handle);
-                }
-                catch
-                {
-
-                }
+            
             }));
             Thread.Start();
 
@@ -56,9 +58,9 @@ namespace UIFramework
 
         private void Update()
         {
-            //if (!ProcessLoading.IsLoading)
-            //    return;
-            return;
+            if (!ProcessLoading.IsLoading)
+                return;
+
             var cont = OpenTK.Graphics.GraphicsContext.CurrentContext;
             cont.Update(this.WindowInfo);
 
@@ -113,7 +115,9 @@ namespace UIFramework
             //Check for custom cursor
             var mouseCursor = ImGui.GetMouseCursor();
 
-            bool isCustom = mouseCursor != ImGuiMouseCursor.Arrow && mouseCursor != ImGuiMouseCursor.None;
+            bool isCustom = mouseCursor != ImGuiMouseCursor.Arrow && mouseCursor != ImGuiMouseCursor.None
+                && mouseCursor != ImGuiMouseCursor.TextInput;
+
             if (isCustom && this.CursorVisible)
             {
                 ImGui.GetIO().MouseDrawCursor = true;

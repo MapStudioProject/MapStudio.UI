@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using Toolbox.Core;
 using Toolbox.Core.ViewModels;
+using ImGuiNET;
 
 namespace MapStudio.UI
 {
@@ -123,11 +124,6 @@ namespace MapStudio.UI
                     Icon = '\uf1b2'.ToString();
                 }
 
-
-                TagUI.UIDrawer += delegate
-                {
-                    RenderHexView();
-                };
                 ContextMenus.Add(new MenuItemModel("Rename", () => {
                     ActivateRename = true;
                 })
@@ -299,12 +295,6 @@ namespace MapStudio.UI
                 }
             }
 
-            private void RenderHexView()
-            {
-                //Dumb hack atm. Don't display data when over 10mb
-                byte[] data = FileInfo.AsBytes();
-            }
-
             public Type GetTypeUI()
             {
                 return typeof(HexWindow);
@@ -330,16 +320,130 @@ namespace MapStudio.UI
 
             private ArchiveFileInfo File;
 
+            private EditorMode Editor = EditorMode.HexEditor;
+
+            private IFileFormat FileFormat;
+
+            private ImguiTextEditor TextEditor = new ImguiTextEditor();
+
+            private bool reload = false;
+
             public void Load(ArchiveFileInfo file)
             {
                 Data = file.AsBytes();
                 File = file;
+                FileFormat = null;
+                TextEditor.Clear();
+                reload = true;
+
+                LoadFile();
+                if (Editor == EditorMode.TextEditor)
+                    PrepareTextEditor();
             }
 
             public void Render()
             {
-                if (Data != null)
-                    MemoryEditor.Draw(Data, Data.Length);
+                ImGui.PushItemWidth(250);
+                if (ImguiCustomWidgets.ComboScrollable("##Editor", Editor.ToString(), ref Editor))
+                {
+                    LoadFile();
+                    if (Editor == EditorMode.TextEditor)
+                        PrepareTextEditor();
+                }
+                ImGui.PopItemWidth();
+
+                if (Editor != EditorMode.HexEditor)
+                {
+                    ImGui.SameLine();
+                    ImGui.PushItemWidth(200);
+                    if (ImGui.Button("Save", new System.Numerics.Vector2(100, 22)))
+                    {
+                        if (this.Editor == EditorMode.TextEditor)
+                            SaveTextEditor();
+
+                        var mem = new MemoryStream();
+                        FileFormat.Save(mem);
+                        this.File.FileData = new MemoryStream(mem.ToArray());
+                    }
+                    ImGui.PopItemWidth();
+                }
+
+                ImGui.BeginChild("editorChild");
+
+                switch (Editor)
+                {
+                    case EditorMode.Properties:
+                        ShowProperties();
+                        break;
+                    case EditorMode.HexEditor:
+                        if (Data != null)
+                            MemoryEditor.Draw(Data, Data.Length);
+                        break;
+                    case EditorMode.FileEditor:
+                        if (FileFormat != null)
+                            ((FileEditor)FileFormat).DrawArchiveFileEditor();
+                        break;
+                    case EditorMode.TextEditor:
+                        TextEditor.Render();
+                        break;
+                }
+
+                ImGui.EndChild();
+            }
+
+            private void ShowProperties()
+            {
+                if (File.FileData == null)
+                    return;
+
+                if (ImGui.CollapsingHeader("Properties", ImGuiTreeNodeFlags.DefaultOpen))
+                {
+                    ImGui.PushStyleColor(ImGuiCol.ChildBg, ThemeHandler.Theme.FrameBg);
+
+                    ImGui.BeginChild("propertiesWindow");
+
+                    ImGui.Columns(2);
+                    ImGuiHelper.BoldText("Property"); ImGui.NextColumn();
+                    ImGuiHelper.BoldText("Value"); ImGui.NextColumn();
+
+                    ImGui.Text("File Size"); ImGui.NextColumn();
+                    ImGui.Text(STMath.GetFileSize(File.FileData.Length)); ImGui.NextColumn();
+
+                    ImGui.Columns(1);
+
+                    ImGui.EndChild();
+
+                    ImGui.PopStyleColor();
+                }
+            }
+
+            private void LoadFile()
+            {
+                if (Editor == EditorMode.FileEditor || Editor == EditorMode.TextEditor)
+                {
+                    if (FileFormat == null)
+                        FileFormat = File.OpenFile();
+                }
+            }
+
+            private void PrepareTextEditor()
+            {
+                if (FileFormat as FileEditor != null)
+                    TextEditor.Load(((FileEditor)FileFormat).ToTextEditor());
+            }
+
+            private void SaveTextEditor()
+            {
+                if (!string.IsNullOrEmpty(TextEditor.Text))
+                    ((FileEditor)FileFormat).SaveTextEditor(TextEditor.Text);
+            }
+
+            enum EditorMode
+            {
+                Properties,
+                HexEditor,
+                FileEditor,
+                TextEditor,
             }
         }
     }

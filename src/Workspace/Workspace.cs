@@ -147,6 +147,13 @@ namespace MapStudio.UI
             UVWindow = new UVWindow(this);
             Windows.Add(GraphWindow.PropertyWindow);
 
+            AssetViewWindow.SelectionChanged += delegate
+            {
+                var asset = AssetViewWindow.SelectedAsset;
+                if (asset != null)
+                    PropertyWindow.SelectedObject = asset;
+            };
+
             Outliner.SelectionChanged += delegate
             {
                 //Assign the active file format if outliner has it selected
@@ -222,9 +229,6 @@ namespace MapStudio.UI
 
             if (ImGui.IsWindowFocused())
                 Workspace.UpdateActive(this);
-
-            if (ViewportWindow.IsFocused)
-                PropertyWindow.SelectedObject = GetSelectedNode();
 
             base.Render();
         }
@@ -669,7 +673,7 @@ namespace MapStudio.UI
             ProcessLoading.Instance.Update(0,100, $"Saving {name}", "Saving");
 
             //Save current file
-            Toolbox.Core.IO.STFileSaver.SaveFileFormat(fileFormat, filePath, (o, s) => {
+            var log = Toolbox.Core.IO.STFileSaver.SaveFileFormat(fileFormat, filePath, (o, s) => {
                 ProcessLoading.Instance.Update(70, 100, $"Compressing {fileFormat.FileInfo.Compression.ToString()}", "Saving");
             });
             //Reload the file if an archive with an open stream
@@ -704,7 +708,7 @@ namespace MapStudio.UI
             ProcessLoading.Instance.Update(100, 100, $"Saving {name}", "Saving");
             ProcessLoading.Instance.IsLoading = false;
 
-            TinyFileDialog.MessageBoxInfoOk($"File {filePath} has been saved!");
+            TinyFileDialog.MessageBoxInfoOk($"File {filePath} has been saved! {log.SaveTime}");
             PrintErrors();
         }
 

@@ -30,7 +30,7 @@ namespace MapStudio.UI
         private Stopwatch stopWatch;
         private System.Timers.Timer animationTimer;
 
-        private float FrameRate = 60.0f;
+        private float FrameRate = 30.0f;
         private float CurrentFrame;
 
         private int timing = 0;
@@ -43,7 +43,7 @@ namespace MapStudio.UI
 
             animationTimer = new System.Timers.Timer()
             {
-                Interval = (int)(1000.0f / 60.0f),
+                Interval = (int)(1000.0f / FrameRate),
             };
             animationTimer.Elapsed += timer_Tick;
         }
