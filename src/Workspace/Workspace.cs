@@ -154,31 +154,33 @@ namespace MapStudio.UI
                     PropertyWindow.SelectedObject = asset;
             };
 
-            Outliner.SelectionChanged += delegate
+            Outliner.SelectionChanged += (o, e) =>
             {
+                var node = Outliner.SelectedNode;
+
                 //Assign the active file format if outliner has it selected
-                if (Outliner.SelectedNode != null)
+                if (node != null)
                 {
                     //Select the active file to edit if one is selected
-                    if (Outliner.SelectedNode.Tag is FileEditor && Outliner.SelectedNode.Tag != ActiveEditor)
-                        ActiveEditor = (FileEditor)Outliner.SelectedNode.Tag;
+                    if (node.Tag is FileEditor && node.Tag != ActiveEditor)
+                        ActiveEditor = (FileEditor)node.Tag;
 
                     //Select an animation for playback in the timeline window
-                    if (Outliner.SelectedNode.Tag is STAnimation) {
-                        TimelineWindow.AddAnimation((STAnimation)Outliner.SelectedNode.Tag);
-                        GraphWindow.AddAnimation((STAnimation)Outliner.SelectedNode.Tag);
+                    if (node.Tag is STAnimation) {
+                        TimelineWindow.AddAnimation((STAnimation)node.Tag);
+                        GraphWindow.AddAnimation((STAnimation)node.Tag);
 
                     }
                     //Load a material to the UV window if one is selected
-                    if (Outliner.SelectedNode.Tag is STGenericMaterial) {
-                        UVWindow.Load((STGenericMaterial)Outliner.SelectedNode.Tag);
+                    if (node.Tag is STGenericMaterial) {
+                        UVWindow.Load((STGenericMaterial)node.Tag);
                     }
                     //Load a mesh to the UV window if one is selected
-                    if (Outliner.SelectedNode.Tag is STGenericMesh) {
-                        UVWindow.Load((STGenericMesh)Outliner.SelectedNode.Tag);
+                    if (node.Tag is STGenericMesh) {
+                        UVWindow.Load((STGenericMesh)node.Tag);
                     }
                 }
-                PropertyWindow.SelectedObject = Outliner.SelectedNode;
+                PropertyWindow.SelectedObject = node;
             };
 
             ToolWindow.UIDrawer += delegate {
@@ -398,17 +400,28 @@ namespace MapStudio.UI
             //Init the gl scene
             editor.Scene.Init();
 
+            bool isDeselectAll = false;
+
             //Viewport on selection changed
             editor.Scene.SelectionUIChanged = null;
             editor.Scene.SelectionUIChanged += (o, e) =>
             {
-                if (o == null) {
+                if (isDeselectAll)
+                    return;
+
+                if (o == null || !((NodeBase)o).IsSelected) {
+                    PropertyWindow.SelectedObject = null;
                     return;
                 }
 
                 if (ViewportWindow.IsFocused) {
-                    if (!KeyEventInfo.State.KeyCtrl && !KeyEventInfo.State.KeyShift)
-                        Outliner.DeselectAll();
+                    isDeselectAll = true;
+
+                   // if (!KeyEventInfo.State.KeyCtrl && !KeyEventInfo.State.KeyShift)
+                     //   Outliner.DeselectAllButNode((NodeBase)o);
+
+                    isDeselectAll = false;
+
                     ScrollToSelectedNode((NodeBase)o);
                 }
 
@@ -864,13 +877,12 @@ namespace MapStudio.UI
             if (!isRepeat)
                 this.GraphWindow?.OnKeyDown(keyInfo);
 
+            ActiveEditor.OnKeyDown(keyInfo, isRepeat);
+
             if (Outliner.IsFocused && !isRepeat)
                 ViewportWindow.Pipeline._context.OnKeyDown(keyInfo, isRepeat, ViewportWindow.IsFocused);
             else if (ViewportWindow.IsFocused)
             {
-                if (!isRepeat)
-                    ActiveEditor.OnKeyDown(keyInfo);
-
                 ViewportWindow.Pipeline._context.OnKeyDown(keyInfo, isRepeat, true);
                 if (keyInfo.IsKeyDown(InputSettings.INPUT.Scene.ShowAddContextMenu))
                     ViewportWindow.LoadAddContextMenu();

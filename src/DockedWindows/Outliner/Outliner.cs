@@ -31,9 +31,10 @@ namespace MapStudio.UI
 
         public NodeBase SelectedNode => SelectedNodes.LastOrDefault();
 
-        public void AddSelection(NodeBase node) {
+        public void AddSelection(NodeBase node, bool change_event = true) {
             SelectedNodes.Add(node);
-            SelectionChanged?.Invoke(node, EventArgs.Empty);
+            if (change_event)
+                SelectionChanged?.Invoke(node, EventArgs.Empty);
         }
 
         public void RemoveSelection(NodeBase node) {
@@ -319,11 +320,20 @@ namespace MapStudio.UI
                 CalculateCount(c, ref counter);
         }
 
+        public void DeselectAllButNode(NodeBase n)
+        {
+            foreach (var node in SelectedNodes)
+                if (node != n)
+                    node.IsSelected = false;
+            SelectedNodes.Clear();
+        }
+
         public void DeselectAll()
         {
             foreach (var node in SelectedNodes)
                 node.IsSelected = false;
             SelectedNodes.Clear();
+            SelectionChanged?.Invoke(null, EventArgs.Empty);
         }
 
         public void DrawNode(NodeBase node, float itemHeight, int level = 0)
@@ -364,7 +374,7 @@ namespace MapStudio.UI
 
             //Node was selected manually outside the outliner so update the list
             if (node.IsSelected && !SelectedNodes.Contains(node))
-                AddSelection(node);
+                AddSelection(node, false);
 
             //Node was deselected manually outside the outliner so update the list
             if (!node.IsSelected && SelectedNodes.Contains(node))

@@ -36,6 +36,22 @@ namespace MapStudio.UI
             return edit;
         }
 
+        public static bool Bool(string label, ref bool value, string tool_tip)
+        {
+            if (!string.IsNullOrEmpty(tool_tip))
+                LabelTip(label, tool_tip);
+            else
+                Label(label);
+
+            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
+            bool edit = ImGui.Checkbox($"##{label}", ref value);
+            ImGui.PopItemWidth();
+
+            ImGui.NextColumn();
+
+            return edit;
+        }
+
         public static bool Bool(string label, ref bool value)
         {
             Label(label);
@@ -171,6 +187,16 @@ namespace MapStudio.UI
             return edit;
         }
 
+        public static bool SliderByte(string label, ref byte value, int min, int max)
+        {
+            int v = value;
+            bool edit = SliderInt(label, ref v, min, max);
+            if (edit)
+                value = (byte)v;
+
+            return edit;
+        }
+
         public static bool DragShort(string label, ref short value)
         {
             int v = value;
@@ -256,6 +282,24 @@ namespace MapStudio.UI
             return edit;
         }
 
+        public static bool ColorEdit4(string label, ref OpenTK.Vector4 value, ImGuiColorEditFlags flags)
+        {
+            Label(label);
+
+            var vec4 = new Vector4(value.X, value.Y, value.Z, value.W);
+
+            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
+            bool edit = ImGui.ColorEdit4($"##{label}", ref vec4, flags);
+            ImGui.PopItemWidth();
+
+            if (edit)
+                value = new OpenTK.Vector4(vec4.X, vec4.Y, vec4.Z, vec4.W);
+
+            ImGui.NextColumn();
+
+            return edit;
+        }
+
         public static bool ColorEdit4(string label, ref Vector4 value, ImGuiColorEditFlags flags)
         {
             Label(label);
@@ -306,6 +350,19 @@ namespace MapStudio.UI
                 return;
 
             ImGui.Text(label);
+            ImGui.NextColumn();
+        }
+
+        static void LabelTip(string label, string tool_tip)
+        {
+            if (!DoLabel)
+                return;
+
+            ImGui.Text(label);
+            ImGui.SameLine();
+            ImGui.Text("?");
+            ImGuiHelper.Tooltip(tool_tip);
+
             ImGui.NextColumn();
         }
     }

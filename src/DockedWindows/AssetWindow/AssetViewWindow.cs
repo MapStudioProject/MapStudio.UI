@@ -13,6 +13,7 @@ using UIFramework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Toolbox.Core.ViewModels;
 
 namespace MapStudio.UI
 {
@@ -407,6 +408,17 @@ namespace MapStudio.UI
 
                         ImGui.EndGroup();
 
+                        if (isSelected && obj.ContextMenus.Count > 0)
+                        {
+                            if (ImGui.BeginPopupContextItem("##ASSET_POPUP", ImGuiPopupFlags.MouseButtonRight))
+                            {
+                                foreach (var menuItem in obj.ContextMenus)
+                                    ImGuiHelper.LoadMenuItem(menuItem);
+
+                                ImGui.EndPopup();
+                            }
+                        }
+
                         ImGui.SetCursorPos(pos);
 
                         bool select = ImGui.Selectable($"##{obj.Name}", isSelected, ImGuiSelectableFlags.AllowItemOverlap, itemSize);
@@ -668,6 +680,11 @@ namespace MapStudio.UI
         /// 
         /// </summary>
         public string[] Categories { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<MenuItemModel> ContextMenus = new List<MenuItemModel>();
 
         public bool Favorited = false;
 

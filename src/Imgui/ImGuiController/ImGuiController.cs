@@ -54,11 +54,6 @@ namespace MapStudio.UI
 
             var context = ImGui.CreateContext();
 
-           /* unsafe
-            {
-                imnodesNET.imnodes.SetImGuiContext((IntPtr)context.NativePtr);
-                imnodesNET.imnodes.Initialize();
-            }*/
 
             ImGui.SetCurrentContext(context);
             var io = ImGui.GetIO();

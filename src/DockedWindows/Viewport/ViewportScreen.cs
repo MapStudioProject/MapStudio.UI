@@ -63,7 +63,7 @@ namespace MapStudio.UI
             //Store the focus state for handling key events
             IsFocused = ImGui.IsWindowFocused();
 
-            if (ImGui.IsAnyMouseDown() && ImGui.IsWindowHovered() && !IsFocused)
+            if (ImGui.IsMouseClicked(ImGuiMouseButton.Right) && ImGui.IsWindowHovered() && !IsFocused)
             {
                 IsFocused = true;
                 ImGui.FocusWindow(ImGui.GetCurrentWindow());
@@ -129,7 +129,7 @@ namespace MapStudio.UI
                 {
                     Pipeline._context.CurrentMousePoint = new OpenTK.Vector2(mouseInfo.X, mouseInfo.Y);
                     Pipeline._context.Scene.SpawnMarker.IsVisible = true;
-                    Pipeline._context.Scene.SpawnMarker.SetCursor(false);
+                    Pipeline._context.Scene.SpawnMarker.SetCursor(GLContext.ActiveContext, false);
 
                     GLContext.ActiveContext.UpdateViewport = true;
                 }
@@ -264,9 +264,11 @@ namespace MapStudio.UI
                 _mouseDown = false;
             }
 
-            context.OnMouseMove(mouseInfo, keyInfo, _mouseDown);
+            if (IsFocused)
 
-            if (ImGuiController.ApplicationHasFocus && IsFocused)
+               context.OnMouseMove(mouseInfo, keyInfo, _mouseDown);
+
+            if (ImGuiController.ApplicationHasFocus && ImGui.IsWindowHovered())
                 context.OnMouseWheel(mouseInfo, keyInfo);
             else
                 context.ResetPrevious();

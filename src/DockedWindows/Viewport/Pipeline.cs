@@ -296,6 +296,11 @@ namespace MapStudio.UI
 
             SetViewport();
 
+
+            //Background
+            if (frameArgs.DisplayBackground)
+                _background.Draw(_context, Pass.OPAQUE);
+
             DrawSceneNoPostEffects();
 
             _context.CurrentShader = null;
@@ -308,11 +313,6 @@ namespace MapStudio.UI
                 _context.Scene.ShadowRenderer.DrawDebugShadowPrePass(_context);
                 _context.Scene.ShadowRenderer.DrawDebugQuad(_context);
             }
-
-            //Background
-            if (frameArgs.DisplayBackground)
-                _background.Draw(_context, Pass.OPAQUE);
-
             //Draw ui
             _context.UIDrawer.Render(_context);
 

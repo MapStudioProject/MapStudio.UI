@@ -83,6 +83,9 @@ namespace MapStudio.UI
             {
                 ImGui.BeginTooltip();
                 ImGui.Text(TranslationSource.GetText(tooltip));
+                if (!string.IsNullOrEmpty(shortcut))
+                    ImGui.Text($"Shortcut: {shortcut}");
+
                 ImGui.EndTooltip();
             }
         }

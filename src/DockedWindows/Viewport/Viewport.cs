@@ -753,5 +753,6 @@ namespace MapStudio.UI
             Pipeline._context.TransformTools.UpdateTransformMode(TransformEngine.TransformActions.Translate);
 
             ReloadMenus();
-        }    }
+        }   
+    }
 }
