@@ -43,7 +43,7 @@ namespace MapStudio.UI
 
             animationTimer = new System.Timers.Timer()
             {
-                Interval = (int)(1000.0f / FrameRate),
+                Interval = (int)(1000.0f / 60.0f),
             };
             animationTimer.Elapsed += timer_Tick;
         }

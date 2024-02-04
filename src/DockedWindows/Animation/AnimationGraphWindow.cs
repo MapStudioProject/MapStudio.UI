@@ -107,14 +107,6 @@ namespace MapStudio.UI
             this.Opened = true;
         }
 
-        public void ClearNodes() {
-            AnimationHierarchy.TreeView.Nodes.Clear();
-        }
-
-        public void AddNode(TreeNode node) {
-            AnimationHierarchy.TreeView.Nodes.Add(node);
-        }
-
         public void ResetAnimations()
         {
             AnimationPlayer.Reset();

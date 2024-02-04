@@ -34,11 +34,6 @@ namespace MapStudio.UI
 
         public void Render(AssetItem asset)
         {
-            if (asset.PropertyUI != null)
-            {
-                asset.PropertyUI.Invoke();
-            }
-
             if (asset.Tag != null)
                 ImguiBinder.LoadProperties(asset.Tag, (sender, e) =>
                 {

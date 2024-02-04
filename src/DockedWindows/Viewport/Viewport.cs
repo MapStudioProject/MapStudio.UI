@@ -94,11 +94,6 @@ namespace MapStudio.UI
             return Viewports[0].SaveAsScreenshot(Pipeline, width, height, alpha);
         }
 
-        public Image<Rgba32> SaveAsScreenshot(Camera camera, int width, int height, bool alpha = false)
-        {
-            return Viewports[0].SaveAsScreenshot(Pipeline, camera, width, height, alpha);
-        }
-
         private void SetScreenLayoutDefault()
         {
             Viewports.Clear();
@@ -753,6 +748,5 @@ namespace MapStudio.UI
             Pipeline._context.TransformTools.UpdateTransformMode(TransformEngine.TransformActions.Translate);
 
             ReloadMenus();
-        }   
-    }
+        }    }
 }

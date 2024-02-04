@@ -55,11 +55,8 @@ namespace MapStudio.UI
             if (!string.IsNullOrEmpty(info))
                 WriteText(info);
 
-            ImGuiHelper.BeginBoldText();
             if (displayErrors) WriteText(StudioLogger.GetErrorLog(), ThemeHandler.Theme.Error);
             if (displayWarnings) WriteText(StudioLogger.GetWarningLog(), ThemeHandler.Theme.Warning);
-            ImGuiHelper.EndBoldText();
-
             if (displayInfo) WriteText(StudioLogger.GetLog());
 
             ImGui.EndChild();

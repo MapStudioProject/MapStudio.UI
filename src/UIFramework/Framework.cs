@@ -58,9 +58,9 @@ namespace UIFramework
 
         private void Update()
         {
-            if (!ProcessLoading.IsLoading)
-                return;
-
+            //if (!ProcessLoading.IsLoading)
+            //    return;
+            return;
             var cont = OpenTK.Graphics.GraphicsContext.CurrentContext;
             cont.Update(this.WindowInfo);
 

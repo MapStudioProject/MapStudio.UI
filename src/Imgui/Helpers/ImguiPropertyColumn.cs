@@ -36,22 +36,6 @@ namespace MapStudio.UI
             return edit;
         }
 
-        public static bool Bool(string label, ref bool value, string tool_tip)
-        {
-            if (!string.IsNullOrEmpty(tool_tip))
-                LabelTip(label, tool_tip);
-            else
-                Label(label);
-
-            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
-            bool edit = ImGui.Checkbox($"##{label}", ref value);
-            ImGui.PopItemWidth();
-
-            ImGui.NextColumn();
-
-            return edit;
-        }
-
         public static bool Bool(string label, ref bool value)
         {
             Label(label);
@@ -71,20 +55,6 @@ namespace MapStudio.UI
 
             ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
             bool edit = ImGui.InputText($"##{label}", ref value, 0x100);
-            ImGui.PopItemWidth();
-
-            ImGui.NextColumn();
-
-            return edit;
-        }
-
-
-        public static bool SliderInt(string label, ref int value, int min, int max)
-        {
-            Label(label);
-
-            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
-            bool edit = ImGui.SliderInt($"##{label}", ref value, min, max);
             ImGui.PopItemWidth();
 
             ImGui.NextColumn();
@@ -167,56 +137,6 @@ namespace MapStudio.UI
             return edit;
         }
 
-        public static bool DragSByte(string label, ref sbyte value)
-        {
-            int v = value;
-            bool edit = DragInt(label, ref v);
-            if (edit)
-                value = (sbyte)v;
-
-            return edit;
-        }
-
-        public static bool DragByte(string label, ref byte value)
-        {
-            int v = value;
-            bool edit = DragInt(label, ref v);
-            if (edit)
-                value = (byte)v;
-
-            return edit;
-        }
-
-        public static bool SliderByte(string label, ref byte value, int min, int max)
-        {
-            int v = value;
-            bool edit = SliderInt(label, ref v, min, max);
-            if (edit)
-                value = (byte)v;
-
-            return edit;
-        }
-
-        public static bool DragShort(string label, ref short value)
-        {
-            int v = value;
-            bool edit = DragInt(label, ref v);
-            if (edit)
-                value = (short)v;
-
-            return edit;
-        }
-
-        public static bool DragUShort(string label, ref ushort value)
-        {
-            int v = value;
-            bool edit = DragInt(label, ref v);
-            if (edit)
-                value = (ushort)v;
-
-            return edit;
-        }
-
         public static bool DragInt(string label, ref int value, float speed = 0.01f)
         {
             Label(label);
@@ -282,24 +202,6 @@ namespace MapStudio.UI
             return edit;
         }
 
-        public static bool ColorEdit4(string label, ref OpenTK.Vector4 value, ImGuiColorEditFlags flags)
-        {
-            Label(label);
-
-            var vec4 = new Vector4(value.X, value.Y, value.Z, value.W);
-
-            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
-            bool edit = ImGui.ColorEdit4($"##{label}", ref vec4, flags);
-            ImGui.PopItemWidth();
-
-            if (edit)
-                value = new OpenTK.Vector4(vec4.X, vec4.Y, vec4.Z, vec4.W);
-
-            ImGui.NextColumn();
-
-            return edit;
-        }
-
         public static bool ColorEdit4(string label, ref Vector4 value, ImGuiColorEditFlags flags)
         {
             Label(label);
@@ -350,19 +252,6 @@ namespace MapStudio.UI
                 return;
 
             ImGui.Text(label);
-            ImGui.NextColumn();
-        }
-
-        static void LabelTip(string label, string tool_tip)
-        {
-            if (!DoLabel)
-                return;
-
-            ImGui.Text(label);
-            ImGui.SameLine();
-            ImGui.Text("?");
-            ImGuiHelper.Tooltip(tool_tip);
-
             ImGui.NextColumn();
         }
     }

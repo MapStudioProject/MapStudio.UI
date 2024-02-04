@@ -154,43 +154,6 @@ namespace MapStudio.UI
             });
         }
 
-        public Image<Rgba32> SaveAsScreenshot(Framebuffer outputBuffer, Camera camera, int width, int height, bool useAlpha = false)
-        {
-            var cam = _context.Camera;
-
-            _context.UpdateViewport = true;
-
-            //Resize the current viewport
-            Width = camera.Width;
-            Height = camera.Height;
-
-            this.OnResize(outputBuffer);
-
-            _context.Camera = camera;
-
-            if (_context.SceneRender != null)
-            {
-                _context.SceneRender.Render(_context, outputBuffer);
-            }
-            else
-            {
-                RenderScene(new RenderFrameArgs()
-                {
-                    DisplayAlpha = useAlpha,
-                    DisplayBackground = !useAlpha,
-                    DisplayOrientationGizmo = false,
-                    DisplayGizmo = false,
-                    DisplayCursor3D = false,
-                    DisplayFloor = false,
-                }, outputBuffer);
-            }
-
-            _context.UpdateViewport = true;
-            _context.Camera = cam;
-
-            return outputBuffer.ReadImagePixels(useAlpha);
-        }
-
         public Image<Rgba32> SaveAsScreenshot(Framebuffer outputBuffer, int width, int height, bool useAlpha = false)
         {
             _context.UpdateViewport = true;
@@ -207,6 +170,7 @@ namespace MapStudio.UI
             }
             else
             {
+
                 RenderScene(new RenderFrameArgs()
                 {
                     DisplayAlpha = useAlpha,
@@ -296,11 +260,6 @@ namespace MapStudio.UI
 
             SetViewport();
 
-
-            //Background
-            if (frameArgs.DisplayBackground)
-                _background.Draw(_context, Pass.OPAQUE);
-
             DrawSceneNoPostEffects();
 
             _context.CurrentShader = null;
@@ -313,6 +272,11 @@ namespace MapStudio.UI
                 _context.Scene.ShadowRenderer.DrawDebugShadowPrePass(_context);
                 _context.Scene.ShadowRenderer.DrawDebugQuad(_context);
             }
+
+            //Background
+            if (frameArgs.DisplayBackground)
+                _background.Draw(_context, Pass.OPAQUE);
+
             //Draw ui
             _context.UIDrawer.Render(_context);
 

@@ -194,8 +194,8 @@ namespace MapStudio.UI
         {
             if (node is TrackNodeVisibility)
                 DrawVisSheet((TrackNodeVisibility)node, cursorPosY);
-            if (node is TextureTrackNode)
-                DrawTexSheet((TextureTrackNode)node, cursorPosY);
+           // if (node is TextureTrackNode)
+            //    DrawTexSheet((TextureTrackNode)node, cursorPosY);
 
             //Draw the dope sheet according to the tree hiearchy
             if (node is AnimationTree.TrackNode)

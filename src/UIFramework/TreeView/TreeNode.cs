@@ -20,7 +20,6 @@ namespace UIFramework
         public EventHandler OnSelected;
         public EventHandler OnChecked;
         public EventHandler OnHeaderRenamed;
-        public EventHandler OnDoubleClick;
 
         //Render events
         public EventHandler IconDrawer;

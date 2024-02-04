@@ -95,8 +95,6 @@ namespace MapStudio.UI
 
         public static bool ComboScrollable<T>(string key, string text, ref T selectedItem, IEnumerable<T> items, Action propertyChanged = null, ImGuiComboFlags flags = ImGuiComboFlags.None)
         {
-            bool edited = false;
-
             if (ImGui.BeginCombo(key, text, flags)) //Check for combo box popup and add items
             {
                 foreach (T item in items)
@@ -105,15 +103,13 @@ namespace MapStudio.UI
                     if (ImGui.Selectable(item.ToString(), isSelected)) {
                         selectedItem = item;
                         propertyChanged?.Invoke();
-
-                        edited = true;
                     }
                     if (isSelected)
                         ImGui.SetItemDefaultFocus();
                 }
                 ImGui.EndCombo();
 
-                return edited;
+                return true;
             }
             if (ImGui.IsItemHovered()) //Check for combo box hover
             {
@@ -126,8 +122,6 @@ namespace MapStudio.UI
                     { //Shift upwards if possible
                         selectedItem = list[index + 1];
                         propertyChanged?.Invoke();
-
-                        edited = true;
                     }
                 }
                 if (delta > 0) //Check for mouse scroll change going down
@@ -139,11 +133,11 @@ namespace MapStudio.UI
                         selectedItem = list[index - 1];
                         propertyChanged?.Invoke();
 
-                        edited = true;
+                        return true;
                     }
                 }
             }
-            return edited;
+            return false;
         }
 
         public static TransformOutput Transform(OpenTK.Vector3 position, OpenTK.Vector3 rotation, OpenTK.Vector3 scale)
@@ -361,12 +355,6 @@ namespace MapStudio.UI
             ImGui.PopStyleVar();
         }
 
-        public static bool ButtonToggle(string label, bool isValue, Vector2 size)
-        {
-            bool v = isValue;
-            return ButtonToggle(label, ref v, size);   
-        }
-
         public static bool ButtonToggle(string label, ref bool isValue, Vector2 size)
         {
             if (isValue)
@@ -375,13 +363,12 @@ namespace MapStudio.UI
                 ImGui.PushStyleColor(ImGuiCol.Button, selectionColor);
             }
             else
-                ImGui.PushStyleColor(ImGuiCol.Button, ThemeHandler.Theme.FrameBgActive);
+                ImGui.PushStyleColor(ImGuiCol.Button, new Vector4());
 
-            /*  ImGui.PushStyleColor(ImGuiCol.Button, color);
-              ImGui.PushStyleColor(ImGuiCol.ButtonHovered, color);
-              ImGui.PushStyleColor(ImGuiCol.ButtonActive, color);*/
+          /*  ImGui.PushStyleColor(ImGuiCol.Button, color);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, color);
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, color);*/
 
-            ImGui.AlignTextToFramePadding();
             bool clicked = ImGui.Button(label, size);
             ImGui.PopStyleColor(1);
 

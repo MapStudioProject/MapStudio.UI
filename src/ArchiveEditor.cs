@@ -9,7 +9,7 @@ using ImGuiNET;
 
 namespace MapStudio.UI
 {
-    public class ArchiveEditor
+    internal class ArchiveEditor
     {
         public static void Load(IArchiveFile file, NodeBase root)
         {

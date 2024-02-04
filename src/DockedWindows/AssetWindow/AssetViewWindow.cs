@@ -13,7 +13,6 @@ using UIFramework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using Toolbox.Core.ViewModels;
 
 namespace MapStudio.UI
 {
@@ -41,9 +40,7 @@ namespace MapStudio.UI
         public AssetItem SelectedAsset
         {
             get { return selectedAsset; }
-            set {
-                selectedAsset = value;
-            }
+            set { selectedAsset = value; }
         }
 
         private AssetItem selectedAsset = null;
@@ -62,8 +59,6 @@ namespace MapStudio.UI
 
         private IAssetLoader ActiveCategory = null;
         private IAssetViewFileTypeList FileTypeList = null;
-
-        public Action SelectionChanged;
 
         public AssetViewWindow(DockSpaceWindow parent) : base(parent)
         {
@@ -408,17 +403,6 @@ namespace MapStudio.UI
 
                         ImGui.EndGroup();
 
-                        if (isSelected && obj.ContextMenus.Count > 0)
-                        {
-                            if (ImGui.BeginPopupContextItem("##ASSET_POPUP", ImGuiPopupFlags.MouseButtonRight))
-                            {
-                                foreach (var menuItem in obj.ContextMenus)
-                                    ImGuiHelper.LoadMenuItem(menuItem);
-
-                                ImGui.EndPopup();
-                            }
-                        }
-
                         ImGui.SetCursorPos(pos);
 
                         bool select = ImGui.Selectable($"##{obj.Name}", isSelected, ImGuiSelectableFlags.AllowItemOverlap, itemSize);
@@ -449,12 +433,8 @@ namespace MapStudio.UI
                         }
 
                         if (select) {
-                            if (selectedAsset != obj)
-                            {
-                                selectedAsset = obj;
-                                SelectionChanged?.Invoke();
-                            }
-                         }
+                            selectedAsset = obj;
+                        }
                         if (isDoubleClicked)
                             doubleClickedAsset = obj;
 
@@ -681,16 +661,9 @@ namespace MapStudio.UI
         /// </summary>
         public string[] Categories { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<MenuItemModel> ContextMenus = new List<MenuItemModel>();
-
         public bool Favorited = false;
 
         public object Tag { get; set; }
-
-        public Action PropertyUI = null;
 
         public string DisplayName { get; internal set; }
 

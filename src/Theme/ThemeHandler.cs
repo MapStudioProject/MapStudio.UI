@@ -45,7 +45,6 @@ namespace MapStudio.UI
         public virtual Vector4 TextSelectedBg { get; set; }
         public virtual Vector4 NavHighlight { get; set; }
         public virtual Vector4 Error { get; set; }
-        public virtual Vector4 Ok { get; set; } = new Vector4(0, 1, 0, 1);
         public virtual Vector4 Warning { get; set; }
         public static Vector4 ActiveTextHighlight { get; set; }
         public static Vector4 HyperLinkText { get; set; }

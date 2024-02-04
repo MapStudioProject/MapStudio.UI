@@ -63,7 +63,7 @@ namespace MapStudio.UI
             //Store the focus state for handling key events
             IsFocused = ImGui.IsWindowFocused();
 
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Right) && ImGui.IsWindowHovered() && !IsFocused)
+            if (ImGui.IsAnyMouseDown() && ImGui.IsWindowHovered() && !IsFocused)
             {
                 IsFocused = true;
                 ImGui.FocusWindow(ImGui.GetCurrentWindow());
@@ -129,7 +129,7 @@ namespace MapStudio.UI
                 {
                     Pipeline._context.CurrentMousePoint = new OpenTK.Vector2(mouseInfo.X, mouseInfo.Y);
                     Pipeline._context.Scene.SpawnMarker.IsVisible = true;
-                    Pipeline._context.Scene.SpawnMarker.SetCursor(GLContext.ActiveContext, false);
+                    Pipeline._context.Scene.SpawnMarker.SetCursor(false);
 
                     GLContext.ActiveContext.UpdateViewport = true;
                 }
@@ -214,18 +214,6 @@ namespace MapStudio.UI
             return GLTexture2D.FromBitmap(bitmap);
         }
 
-        public Image<Rgba32> SaveAsScreenshot(ViewportRenderer renderer, Camera camera, int width, int height, bool enableAlpha = false)
-        {
-            //Save into an fbo that supports an alpha channel
-            Framebuffer fbo = new Framebuffer(FramebufferTarget.Framebuffer,
-             width, height, PixelInternalFormat.Rgba16f, 1);
-
-            var bitmap = renderer.SaveAsScreenshot(fbo, camera, width, height, enableAlpha);
-            fbo.Dispose();
-
-            return bitmap;
-        }
-
         public Image<Rgba32> SaveAsScreenshot(ViewportRenderer renderer, int width, int height, bool enableAlpha = false) {
             //Save into an fbo that supports an alpha channel
             Framebuffer fbo = new Framebuffer(FramebufferTarget.Framebuffer,
@@ -254,8 +242,6 @@ namespace MapStudio.UI
                 Workspace.ActiveWorkspace?.OnMouseDown(mouseInfo);
             }
 
-            Workspace.ActiveWorkspace?.OnMouseMove(mouseInfo);
-
             if (ImGui.IsMouseReleased(ImGuiMouseButton.Left) ||
                ImGui.IsMouseReleased(ImGuiMouseButton.Right) ||
                ImGui.IsMouseReleased(ImGuiMouseButton.Middle))
@@ -264,11 +250,9 @@ namespace MapStudio.UI
                 _mouseDown = false;
             }
 
-            if (IsFocused)
+            context.OnMouseMove(mouseInfo, keyInfo, _mouseDown);
 
-               context.OnMouseMove(mouseInfo, keyInfo, _mouseDown);
-
-            if (ImGuiController.ApplicationHasFocus && ImGui.IsWindowHovered())
+            if (ImGuiController.ApplicationHasFocus && IsFocused)
                 context.OnMouseWheel(mouseInfo, keyInfo);
             else
                 context.ResetPrevious();

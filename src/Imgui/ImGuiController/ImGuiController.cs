@@ -44,6 +44,8 @@ namespace MapStudio.UI
         public static ImFontPtr FontIconSolid;
         public static ImFontPtr FontIconRegular;
 
+        public static ImFontPtr FontZoomed;
+        public static ImFontPtr FontJKZoomed;
         /// <summary>
         /// Constructs a new ImGuiController.
         /// </summary>
@@ -54,6 +56,11 @@ namespace MapStudio.UI
 
             var context = ImGui.CreateContext();
 
+           /* unsafe
+            {
+                imnodesNET.imnodes.SetImGuiContext((IntPtr)context.NativePtr);
+                imnodesNET.imnodes.Initialize();
+            }*/
 
             ImGui.SetCurrentContext(context);
             var io = ImGui.GetIO();
@@ -104,6 +111,17 @@ namespace MapStudio.UI
 
                 DefaultFontBold = io.Fonts.AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir,"Lib","Fonts","FontBold.ttf"), 16, nativeConfig);
                 FontOperator = io.Fonts.AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir, "Lib", "Fonts", "FontBold.ttf"), 40, nativeConfig);
+
+                //For zooming in text editor
+                FontZoomed = io.Fonts.AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir, "Lib", "Fonts", "Font.ttf"), 32, nativeConfig);
+
+                ImFontConfig configJK = new ImFontConfig
+                {
+                    MergeMode = 1,
+                    PixelSnapH = 1,
+                    GlyphMinAdvanceX = 25,
+                };
+                FontJKZoomed = AddFontFromFileTTF(Path.Combine(Runtime.ExecutableDir, "Lib", "Fonts", "NotoSansCJKjp-Medium.otf"), 32, configJK, io.Fonts.GetGlyphRangesJapanese());
             }
 
             io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;

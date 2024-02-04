@@ -147,40 +147,31 @@ namespace MapStudio.UI
             UVWindow = new UVWindow(this);
             Windows.Add(GraphWindow.PropertyWindow);
 
-            AssetViewWindow.SelectionChanged += delegate
+            Outliner.SelectionChanged += delegate
             {
-                var asset = AssetViewWindow.SelectedAsset;
-                if (asset != null)
-                    PropertyWindow.SelectedObject = asset;
-            };
-
-            Outliner.SelectionChanged += (o, e) =>
-            {
-                var node = Outliner.SelectedNode;
-
                 //Assign the active file format if outliner has it selected
-                if (node != null)
+                if (Outliner.SelectedNode != null)
                 {
                     //Select the active file to edit if one is selected
-                    if (node.Tag is FileEditor && node.Tag != ActiveEditor)
-                        ActiveEditor = (FileEditor)node.Tag;
+                    if (Outliner.SelectedNode.Tag is FileEditor && Outliner.SelectedNode.Tag != ActiveEditor)
+                        ActiveEditor = (FileEditor)Outliner.SelectedNode.Tag;
 
                     //Select an animation for playback in the timeline window
-                    if (node.Tag is STAnimation) {
-                        TimelineWindow.AddAnimation((STAnimation)node.Tag);
-                        GraphWindow.AddAnimation((STAnimation)node.Tag);
+                    if (Outliner.SelectedNode.Tag is STAnimation) {
+                        TimelineWindow.AddAnimation((STAnimation)Outliner.SelectedNode.Tag);
+                        GraphWindow.AddAnimation((STAnimation)Outliner.SelectedNode.Tag);
 
                     }
                     //Load a material to the UV window if one is selected
-                    if (node.Tag is STGenericMaterial) {
-                        UVWindow.Load((STGenericMaterial)node.Tag);
+                    if (Outliner.SelectedNode.Tag is STGenericMaterial) {
+                        UVWindow.Load((STGenericMaterial)Outliner.SelectedNode.Tag);
                     }
                     //Load a mesh to the UV window if one is selected
-                    if (node.Tag is STGenericMesh) {
-                        UVWindow.Load((STGenericMesh)node.Tag);
+                    if (Outliner.SelectedNode.Tag is STGenericMesh) {
+                        UVWindow.Load((STGenericMesh)Outliner.SelectedNode.Tag);
                     }
                 }
-                PropertyWindow.SelectedObject = node;
+                PropertyWindow.SelectedObject = Outliner.SelectedNode;
             };
 
             ToolWindow.UIDrawer += delegate {
@@ -231,6 +222,9 @@ namespace MapStudio.UI
 
             if (ImGui.IsWindowFocused())
                 Workspace.UpdateActive(this);
+
+            if (ViewportWindow.IsFocused)
+                PropertyWindow.SelectedObject = GetSelectedNode();
 
             base.Render();
         }
@@ -400,28 +394,17 @@ namespace MapStudio.UI
             //Init the gl scene
             editor.Scene.Init();
 
-            bool isDeselectAll = false;
-
             //Viewport on selection changed
             editor.Scene.SelectionUIChanged = null;
             editor.Scene.SelectionUIChanged += (o, e) =>
             {
-                if (isDeselectAll)
-                    return;
-
-                if (o == null || !((NodeBase)o).IsSelected) {
-                    PropertyWindow.SelectedObject = null;
+                if (o == null) {
                     return;
                 }
 
                 if (ViewportWindow.IsFocused) {
-                    isDeselectAll = true;
-
-                   // if (!KeyEventInfo.State.KeyCtrl && !KeyEventInfo.State.KeyShift)
-                     //   Outliner.DeselectAllButNode((NodeBase)o);
-
-                    isDeselectAll = false;
-
+                    if (!KeyEventInfo.State.KeyCtrl && !KeyEventInfo.State.KeyShift)
+                        Outliner.DeselectAll();
                     ScrollToSelectedNode((NodeBase)o);
                 }
 
@@ -686,7 +669,7 @@ namespace MapStudio.UI
             ProcessLoading.Instance.Update(0,100, $"Saving {name}", "Saving");
 
             //Save current file
-            var log = Toolbox.Core.IO.STFileSaver.SaveFileFormat(fileFormat, filePath, (o, s) => {
+            Toolbox.Core.IO.STFileSaver.SaveFileFormat(fileFormat, filePath, (o, s) => {
                 ProcessLoading.Instance.Update(70, 100, $"Compressing {fileFormat.FileInfo.Compression.ToString()}", "Saving");
             });
             //Reload the file if an archive with an open stream
@@ -721,7 +704,7 @@ namespace MapStudio.UI
             ProcessLoading.Instance.Update(100, 100, $"Saving {name}", "Saving");
             ProcessLoading.Instance.IsLoading = false;
 
-            TinyFileDialog.MessageBoxInfoOk($"File {filePath} has been saved! {log.SaveTime}");
+            TinyFileDialog.MessageBoxInfoOk($"File {filePath} has been saved!");
             PrintErrors();
         }
 
@@ -877,12 +860,13 @@ namespace MapStudio.UI
             if (!isRepeat)
                 this.GraphWindow?.OnKeyDown(keyInfo);
 
-            ActiveEditor.OnKeyDown(keyInfo, isRepeat);
-
             if (Outliner.IsFocused && !isRepeat)
                 ViewportWindow.Pipeline._context.OnKeyDown(keyInfo, isRepeat, ViewportWindow.IsFocused);
             else if (ViewportWindow.IsFocused)
             {
+                if (!isRepeat)
+                    ActiveEditor.OnKeyDown(keyInfo);
+
                 ViewportWindow.Pipeline._context.OnKeyDown(keyInfo, isRepeat, true);
                 if (keyInfo.IsKeyDown(InputSettings.INPUT.Scene.ShowAddContextMenu))
                     ViewportWindow.LoadAddContextMenu();
@@ -922,9 +906,26 @@ namespace MapStudio.UI
         public new void Dispose()
         {
             //Dispose files
+
+            void DisposeArchive(IFileFormat fileFormat)
+            {
+                foreach (var f in ((IArchiveFile)fileFormat).Files)
+                {
+                    if (f.FileFormat is IArchiveFile)
+                        DisposeArchive(f.FileFormat);
+
+                    if (f.FileFormat is IDisposable)
+                        ((IDisposable)f.FileFormat).Dispose();
+                }
+            }
+
             foreach (var file in Resources.Files)
+            {
                 if (file is IDisposable)
                     ((IDisposable)file).Dispose();
+                if (file is IArchiveFile)
+                    DisposeArchive(file);
+            }
 
             //Dispose renderables
             foreach (var render in DataCache.ModelCache.Values)

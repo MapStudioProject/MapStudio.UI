@@ -181,20 +181,10 @@ namespace MapStudio.UI
                 }
                 ImGui.EndCombo();
             }
-
-            string quality = Yaz0.Quality.ToString();
-            List<string> options = new List<string>()
+            if (ImGui.DragInt("Yaz0 Level (1 fast, 9 slow)", ref Runtime.Yaz0CompressionLevel, 1, 1, 9))
             {
-                "Fast (Default)",
-                "Medium (CTlib)",
-                "Best {LibYaz0}",
-                "Nintendo (Original)",
-            };
 
-            ImguiCustomWidgets.ComboScrollable("Yaz0 Level", quality, ref quality, options, () =>
-            {
-                Yaz0.Quality = (Yaz0.QualityLevel)options.IndexOf(quality);
-            });
+            }
         }
 
         /// <summary>
@@ -305,6 +295,6 @@ namespace MapStudio.UI
         public virtual void OnMouseMove(MouseEventInfo mouseInfo) { }
         public virtual void OnMouseDown(MouseEventInfo mouseInfo) { }
         public virtual void OnMouseUp(MouseEventInfo mouseInfo) { }
-        public virtual void OnKeyDown(KeyEventInfo keyEventInfo, bool isRepeat) { }
+        public virtual void OnKeyDown(KeyEventInfo keyEventInfo) { }
     }
 }
