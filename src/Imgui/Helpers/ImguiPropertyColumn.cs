@@ -167,20 +167,73 @@ namespace MapStudio.UI
             return edit;
         }
 
-        public static bool DragSByte(string label, ref sbyte value)
+        public static bool InputHexByte(string label, ref byte value, int speed = 1)
+        {
+            Label(label);
+
+            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
+            string hexstring = value.ToString("X2");
+            bool edit = ImGui.InputText($"##{label}", ref hexstring, 2, ImGuiInputTextFlags.CharsHexadecimal | ImGuiInputTextFlags.CharsUppercase);
+            if (edit)
+            {
+                value = byte.Parse(hexstring, System.Globalization.NumberStyles.HexNumber);
+            }
+            ImGui.PopItemWidth();
+
+            ImGui.NextColumn();
+
+            return edit;
+        }
+        public static bool InputHexShort(string label, ref ushort value, int speed = 1)
+        {
+            Label(label);
+
+            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
+            string hexstring = value.ToString("X4");
+            bool edit = ImGui.InputText($"##{label}", ref hexstring, 4, ImGuiInputTextFlags.CharsHexadecimal | ImGuiInputTextFlags.CharsUppercase);
+            if (edit)
+            {
+                value = ushort.Parse(hexstring, System.Globalization.NumberStyles.HexNumber);
+            }
+            ImGui.PopItemWidth();
+
+            ImGui.NextColumn();
+
+            return edit;
+        }
+
+        public static bool InputHexInt(string label, ref uint value, int speed = 1)
+        {
+            Label(label);
+
+            ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
+            string hexstring = value.ToString("X8");
+            bool edit = ImGui.InputText($"##{label}", ref hexstring, 8, ImGuiInputTextFlags.CharsHexadecimal | ImGuiInputTextFlags.CharsUppercase);
+            if (edit)
+            {
+                value = uint.Parse(hexstring, System.Globalization.NumberStyles.HexNumber);
+            }            
+            ImGui.PopItemWidth();
+
+            ImGui.NextColumn();
+
+            return edit;
+        }
+
+        public static bool DragSByte(string label, ref sbyte value, float speed = 0.01f, sbyte v_min = sbyte.MinValue, sbyte v_max = sbyte.MaxValue, string format = "%d")
         {
             int v = value;
-            bool edit = DragInt(label, ref v);
+            bool edit = DragInt(label, ref v, speed, v_min, v_max, format);
             if (edit)
                 value = (sbyte)v;
 
             return edit;
         }
 
-        public static bool DragByte(string label, ref byte value)
+        public static bool DragByte(string label, ref byte value, float speed = 0.01f, byte v_min = byte.MinValue, byte v_max = byte.MaxValue, string format = "%d")
         {
             int v = value;
-            bool edit = DragInt(label, ref v);
+            bool edit = DragInt(label, ref v, speed, v_min, v_max, format);
             if (edit)
                 value = (byte)v;
 
@@ -197,32 +250,32 @@ namespace MapStudio.UI
             return edit;
         }
 
-        public static bool DragShort(string label, ref short value)
+        public static bool DragShort(string label, ref short value, float speed = 0.01f, short v_min = short.MinValue, short v_max = short.MaxValue, string format = "%d")
         {
             int v = value;
-            bool edit = DragInt(label, ref v);
+            bool edit = DragInt(label, ref v, speed, v_min, v_max, format);
             if (edit)
                 value = (short)v;
 
             return edit;
         }
 
-        public static bool DragUShort(string label, ref ushort value)
+        public static bool DragUShort(string label, ref ushort value, float speed = 0.01f, ushort v_min = ushort.MinValue, ushort v_max = ushort.MaxValue, string format = "%d")
         {
             int v = value;
-            bool edit = DragInt(label, ref v);
+            bool edit = DragInt(label, ref v, speed, v_min, v_max, format);
             if (edit)
                 value = (ushort)v;
 
             return edit;
         }
 
-        public static bool DragInt(string label, ref int value, float speed = 0.01f)
+        public static bool DragInt(string label, ref int value, float speed = 0.01f, int v_min = int.MinValue, int v_max = int.MaxValue, string format = "%d")
         {
             Label(label);
 
             ImGui.PushItemWidth(ImGui.GetColumnWidth(1) - 5);
-            bool edit = ImGui.DragInt($"##{label}", ref value, speed);
+            bool edit = ImGui.DragInt($"##{label}", ref value, speed, v_min, v_max, format);
             ImGui.PopItemWidth();
 
             ImGui.NextColumn();

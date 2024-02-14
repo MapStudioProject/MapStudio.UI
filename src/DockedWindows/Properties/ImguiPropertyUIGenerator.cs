@@ -352,10 +352,12 @@ namespace MapStudio.UI
                 }
                 else
                 {
+                    if (readOnly) ImGui.PushItemFlag(ImGuiItemFlags.Disabled, true);
                     if (ImGui.Checkbox(label, ref inputValue))
                     {
                         propertyEdit.Value = (bool)inputValue;
                     }
+                    if (readOnly) ImGui.PopItemFlag();
                 }
             }
             else if (type == typeof(OpenTK.Vector3))
