@@ -226,7 +226,8 @@ namespace MapStudio.UI
         {
             var handler = (ImguiBinder.PropertyChangedCustomArgs)e;
             //Apply the property
-            handler.PropertyInfo.SetValue(handler.Object, sender);
+            if (handler.PropertyInfo.SetMethod != null)
+                handler.PropertyInfo.SetValue(handler.Object, sender);
 
             //Batch editing for selected
             var selected = Workspace.ActiveWorkspace.GetSelected();
@@ -237,7 +238,8 @@ namespace MapStudio.UI
 
                 var tag = node.Tag;
                 var type = tag.GetType().GetProperty(handler.Name);
-                type.SetValue(tag, sender);
+                if (type.SetMethod != null)
+                    type.SetValue(tag, sender);
                 node.OnPropertyTagChanged?.Invoke(sender, handler);
             }
             GLContext.ActiveContext.UpdateViewport = true;
