@@ -180,7 +180,9 @@ namespace MapStudio.UI
                         UVWindow.Load((STGenericMesh)node.Tag);
                     }
                 }
-                PropertyWindow.SelectedObject = node;
+
+                if (node.IsSelected)
+                    PropertyWindow.SelectedObject = node;
             };
 
             ToolWindow.UIDrawer += delegate {
@@ -445,7 +447,6 @@ namespace MapStudio.UI
             Name = "New Project";
             Resources = new ProjectResources();
             Resources.ProjectFile.WorkingDirectory = Runtime.ExecutableDir;
-            LoadProjectResources();
 
             ActiveEditor = (FileEditor)Activator.CreateInstance(editor);
 
@@ -480,6 +481,8 @@ namespace MapStudio.UI
                         SetupActiveEditor(ActiveEditor);
                         ActiveEditor.AfterLoaded();
 
+                        LoadProjectResources();
+
                         onProjectCreated?.Invoke(true);
                     };
                 });
@@ -490,6 +493,8 @@ namespace MapStudio.UI
 
                 ActiveEditor.CreateNew();
                 SetupActiveEditor(ActiveEditor);
+                LoadProjectResources();
+
                 onProjectCreated?.Invoke(true);
             }
         }

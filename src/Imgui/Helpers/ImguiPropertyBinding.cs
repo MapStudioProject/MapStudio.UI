@@ -404,9 +404,9 @@ namespace MapStudio.UI
             if (ImGui.BeginCombo(label, inputValue.ToString(), flags))
             {
                 var values = Enum.GetValues(typeof(T));
-                foreach (var val in values)
+                foreach (T val in values)
                 {
-                    bool isSelected = inputValue == val;
+                    bool isSelected = inputValue.Equals(val);
                     string cblabel = val.ToString();
                     if (TranslationSource.HasKey(cblabel))
                         cblabel = TranslationSource.GetText(cblabel);
