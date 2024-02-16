@@ -181,7 +181,7 @@ namespace MapStudio.UI
                     }
                 }
 
-                if (node.IsSelected)
+                if (node != null && node.IsSelected)
                     PropertyWindow.SelectedObject = node;
             };
 
