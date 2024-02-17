@@ -366,9 +366,12 @@ namespace MapStudio.UI
             return edit;
         }
 
-        public static bool Combo<T>(string label, ref T value, ImGuiComboFlags flags = ImGuiComboFlags.None)
+        public static bool Combo<T>(string label, ref T value, ImGuiComboFlags flags = ImGuiComboFlags.None, string tool_tip = null)
         {
-            Label(label);
+            if (!string.IsNullOrEmpty(tool_tip))
+                LabelTip(label, tool_tip);
+            else
+                Label(label);
 
             ImGui.PushItemWidth(ImGui.GetColumnWidth() - 15);
             bool edit = ImguiCustomWidgets.ComboScrollable<T>($"##{label}", value.ToString(), ref value);
