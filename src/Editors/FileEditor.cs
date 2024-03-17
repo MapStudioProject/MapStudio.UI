@@ -148,17 +148,31 @@ namespace MapStudio.UI
             {
                 string quality = Yaz0.Quality.ToString();
                 List<string> options = new List<string>()
-            {
-                "Fast (Default)",
-                "Medium (CTlib)",
-                "Best {LibYaz0}",
-                "Nintendo (Original)",
-            };
+                {
+                    "Fast (Default)",
+                    "Track Studio (Previous)",
+                    "Medium (CTlib)",
+                    "Best {LibYaz0}",
+                    "Nintendo (Wii)",
+                };
 
                 ImguiCustomWidgets.ComboScrollable("Yaz0 Level", quality, ref quality, options, () =>
                 {
                     Yaz0.Quality = (Yaz0.QualityLevel)options.IndexOf(quality);
+                    //save settings
+                    GlobalSettings.Current.Program.Yaz0Quality = Yaz0.Quality;
+                    GlobalSettings.Current.Save();
                 });
+
+                if (Yaz0.Quality == Yaz0.QualityLevel.TrackStudio)
+                {
+                    if (ImGui.SliderInt($"Level (9 = best)", ref Runtime.Yaz0CompressionLevel, 1, 9))
+                    {                    
+                        //save settings
+                        GlobalSettings.Current.Program.Yaz0Level = Runtime.Yaz0CompressionLevel;
+                        GlobalSettings.Current.Save();
+                    }
+                }
             }
         }
 

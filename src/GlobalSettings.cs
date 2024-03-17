@@ -168,6 +168,8 @@ namespace MapStudio.UI
 
             Toolbox.Core.Runtime.DisplayBones = Bones.Display;
             Toolbox.Core.Runtime.BonePointSize = Bones.Size;
+            Yaz0.Quality = Program.Yaz0Quality;
+            Toolbox.Core.Runtime.Yaz0CompressionLevel = Program.Yaz0Level;
         }
 
         /// <summary>
@@ -200,6 +202,9 @@ namespace MapStudio.UI
 
             Bones.Display = Toolbox.Core.Runtime.DisplayBones;
             Bones.Size = Toolbox.Core.Runtime.BonePointSize;
+
+            Program.Yaz0Quality = Yaz0.Quality;
+            Program.Yaz0Level = Runtime.Yaz0CompressionLevel;
         }
 
         public class ProgramSettings
@@ -239,6 +244,10 @@ namespace MapStudio.UI
             public void ResetProjectDir() {
                 ProjectDirectory = DefaultProjectPath();
             }
+
+            public Yaz0.QualityLevel Yaz0Quality = Yaz0.QualityLevel.Default;
+
+            public int Yaz0Level = Runtime.Yaz0CompressionLevel;
         }
 
         public class DockSettings
