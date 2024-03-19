@@ -63,10 +63,7 @@ namespace MapStudio.UI
                     }
                 }
 
-                System.Timers.Timer timer = new System.Timers.Timer(1000);
-                timer.Elapsed += (o, e) => CheckDarkmode();
-
-                timer.Start();
+                CheckDarkmode();
             }
         }
     }
