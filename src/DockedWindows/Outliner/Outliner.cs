@@ -431,7 +431,7 @@ namespace MapStudio.UI
                 bool nodeFocused = false;
                 //Only check when the node focus is changed which gets activated during arrow keys
                 //Imgui keeps IsItemFocused() on the node and only removes it during a left click
-                if (ImGui.IsItemFocused() && focusedNode != node) {
+                if (ImGui.IsItemFocused() && focusedNode != node && !isRenaming) {
                     focusedNode = node;
                     nodeFocused = true;
                 }
@@ -603,13 +603,13 @@ namespace MapStudio.UI
                     }
 
                     if (ImGui.InputText("##RENAME_NODE", ref renameText, 512,
-                          ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.CallbackCompletion |
-                          ImGuiInputTextFlags.CallbackHistory | ImGuiInputTextFlags.NoHorizontalScroll |
-                          ImGuiInputTextFlags.AutoSelectAll))
+                                  ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.CallbackCompletion |
+                                  ImGuiInputTextFlags.NoHorizontalScroll |
+                                  ImGuiInputTextFlags.AutoSelectAll))
                     {
                         applyRename();
                     }
-                    if (!ImGui.IsItemHovered() && (ImGui.IsMouseClicked(ImGuiMouseButton.Left)|| 
+                    if (!ImGui.IsItemHovered() && (ImGui.IsMouseClicked(ImGuiMouseButton.Left) ||
                                                   ImGui.IsMouseClicked(ImGuiMouseButton.Right)))
                     {
                         applyRename();
