@@ -620,6 +620,12 @@ namespace MapStudio.UI
                 ReloadMenus();
             }, "SHOW_FLOOR", DrawableGridFloor.Display));
 
+            menus.Add(new MenuItemModel($"      {IconManager.MODEL_ICON}      Show Bounding Boxes", () =>
+            {
+                Runtime.RenderBoundingBoxes = !Runtime.RenderBoundingBoxes;
+                ReloadMenus();
+            }, "Show Bounding Boxes", Runtime.RenderBoundingBoxes));
+
             return menus;
         }
 
