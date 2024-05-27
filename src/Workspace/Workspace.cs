@@ -156,9 +156,16 @@ namespace MapStudio.UI
 
                     //Select an animation for playback in the timeline window
                     if (Outliner.SelectedNode.Tag is STAnimation) {
-                        TimelineWindow.AddAnimation((STAnimation)Outliner.SelectedNode.Tag);
-                        GraphWindow.AddAnimation((STAnimation)Outliner.SelectedNode.Tag);
 
+                        bool reset_animation = !KeyEventInfo.State.KeyCtrl && !KeyEventInfo.State.KeyCtrl;
+
+                        //Only update the timeline if the animation isn't present
+                        bool has_animation = TimelineWindow.HasAnimation((STAnimation)Outliner.SelectedNode.Tag);
+                        if (!has_animation)
+                        {
+                            TimelineWindow.AddAnimation((STAnimation)Outliner.SelectedNode.Tag, reset_animation);
+                            GraphWindow.AddAnimation((STAnimation)Outliner.SelectedNode.Tag, reset_animation);
+                        }
                     }
                     //Load a material to the UV window if one is selected
                     if (Outliner.SelectedNode.Tag is STGenericMaterial) {

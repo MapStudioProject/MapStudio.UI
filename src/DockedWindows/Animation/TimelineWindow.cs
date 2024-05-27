@@ -58,6 +58,8 @@ namespace MapStudio.UI
             this.Opened = true;
         }
 
+        public bool HasAnimation(STAnimation anim) => AnimationPlayer.CurrentAnimations.Contains(anim);
+
         public void ResetAnimations()
         {
             AnimationPlayer.CurrentAnimations.Clear();
