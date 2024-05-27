@@ -157,7 +157,7 @@ namespace MapStudio.UI
                     //Select an animation for playback in the timeline window
                     if (Outliner.SelectedNode.Tag is STAnimation) {
 
-                        bool reset_animation = !KeyEventInfo.State.KeyCtrl && !KeyEventInfo.State.KeyCtrl;
+                        bool reset_animation = !KeyEventInfo.State.KeyCtrl && !KeyEventInfo.State.KeyShift;
 
                         //Only update the timeline if the animation isn't present
                         bool has_animation = TimelineWindow.HasAnimation((STAnimation)Outliner.SelectedNode.Tag);
