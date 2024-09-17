@@ -337,9 +337,10 @@ namespace MapStudio.UI
 
             IFileFormat fileFormat = null;
 
+            fileFormat = Toolbox.Core.IO.STFileLoader.OpenFileFormat(filePath);
+
             try
             {
-                fileFormat = Toolbox.Core.IO.STFileLoader.OpenFileFormat(filePath);
             }
             catch (Exception ex)
             {
@@ -423,7 +424,7 @@ namespace MapStudio.UI
             ReloadViewportMenu();
         }
 
-        public void CreateNewProject(Type editor, Action<bool> onProjectCreated)
+        public void CreateNewProject(Type editor, string menu_name, Action<bool> onProjectCreated)
         {
             Name = "New Project";
             Resources = new ProjectResources();
@@ -459,7 +460,7 @@ namespace MapStudio.UI
 
                     UIManager.ActionExecBeforeUIDraw += delegate
                     {
-                        ActiveEditor.CreateNew();
+                        ActiveEditor.CreateNew(menu_name);
                         SetupActiveEditor(ActiveEditor);
                         ActiveEditor.AfterLoaded();
 
@@ -471,7 +472,7 @@ namespace MapStudio.UI
             {
                 ProcessLoading.Instance.IsLoading = true;
 
-                ActiveEditor.CreateNew();
+                ActiveEditor.CreateNew(menu_name);
                 SetupActiveEditor(ActiveEditor);
                 onProjectCreated?.Invoke(true);
             }

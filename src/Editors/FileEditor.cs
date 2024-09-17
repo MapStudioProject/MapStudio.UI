@@ -98,7 +98,7 @@ namespace MapStudio.UI
         /// <summary>
         /// Creates a new file instance.
         /// </summary>
-        public virtual bool CreateNew()
+        public virtual bool CreateNew(string menu_name)
         {
             return false;
         }
