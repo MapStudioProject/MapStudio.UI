@@ -459,7 +459,14 @@ namespace MapStudio.UI
                 {
                     //Move selected
                     for (int i = 0; i < SelectedKeys.Count; i++)
-                        SelectedKeys[i].Frame = PreDragFrames[i] + diff;
+                    {
+                        var newFrame = PreDragFrames[i] + diff;
+                        //check if a key does not exist on the same frame to prevent overlapping
+                        if (SelectedKeys[i].IsFrameKeyed(newFrame))
+                            continue;
+
+                        SelectedKeys[i].Frame = newFrame;
+                    }
                 }
             }
             lastMousePos = new Vector2(mouseInfo.X, mouseInfo.Y);

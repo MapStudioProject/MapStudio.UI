@@ -545,6 +545,11 @@ namespace MapStudio.UI
                 set { KeyFrame.Frame = value; }
             }
 
+            public bool IsFrameKeyed(float frame)
+            {
+                return this.Track.KeyFrames.Any(x => x.Frame == frame);
+            }
+
             //Min/max UI element size
             public Vector2 Max = new Vector2();
             public Vector2 Min = new Vector2();
