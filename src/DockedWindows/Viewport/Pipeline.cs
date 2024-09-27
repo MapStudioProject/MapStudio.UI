@@ -96,7 +96,7 @@ namespace MapStudio.UI
             if (_context.Camera.Mode == Camera.CameraMode.Inspect)
             {
                 _context.Camera.TargetPosition = new OpenTK.Vector3(0, 0, 0);
-                _context.Camera.Distance = 50;
+                _context.Camera.TargetDistance = 50;
             }
             else
                 _context.Camera.TargetPosition = new OpenTK.Vector3(0, 0, 50);
