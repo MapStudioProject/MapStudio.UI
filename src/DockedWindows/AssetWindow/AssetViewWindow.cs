@@ -10,6 +10,9 @@ using ImGuiNET;
 using GLFrameworkEngine;
 using OpenTK.Graphics;
 using UIFramework;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace MapStudio.UI
 {
@@ -706,7 +709,7 @@ namespace MapStudio.UI
     {
         public string FilePath;
 
-        private System.Drawing.Bitmap thumbnail;
+        private Image<Rgba32> thumbnail;
         private int id = -1;
 
         private byte[] FileDataHash;
@@ -769,10 +772,9 @@ namespace MapStudio.UI
             //Do not load the actual render data as it requires multi threading contexts
             if (FilePath.EndsWith(".png"))
             {
-                var image = (System.Drawing.Bitmap)System.Drawing.Bitmap.FromStream(new System.IO.MemoryStream(File.ReadAllBytes(FilePath)));
-                thumbnail = Toolbox.Core.Imaging.BitmapExtension.CreateImageThumbnail(image, 64, 64, true);
-
-                image.Dispose();
+                var image = Image.Load<Rgba32>(FilePath);
+                image.Mutate(x => x.Resize(64, 64));
+                thumbnail = image;
             }
         }
 

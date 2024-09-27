@@ -11,6 +11,8 @@ using Toolbox.Core;
 using Toolbox.Core.Animations;
 using Toolbox.Core.ViewModels;
 using UIFramework;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
 
 namespace MapStudio.UI
 {
@@ -83,7 +85,7 @@ namespace MapStudio.UI
             return Viewports[0].SaveAsScreenshotGLTexture(Pipeline, width, height, true);
         }
 
-        public System.Drawing.Bitmap SaveAsScreenshot(int width, int height, bool alpha = false)
+        public Image<Rgba32> SaveAsScreenshot(int width, int height, bool alpha = false)
         {
             return Viewports[0].SaveAsScreenshot(Pipeline, width, height, alpha);
         }
