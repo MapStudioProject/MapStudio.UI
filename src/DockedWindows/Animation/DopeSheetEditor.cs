@@ -457,6 +457,8 @@ namespace MapStudio.UI
                 }
                 else if (diff != 0)
                 {
+                    bool needsResorting = false;
+
                     //Move selected
                     for (int i = 0; i < SelectedKeys.Count; i++)
                     {
@@ -466,10 +468,31 @@ namespace MapStudio.UI
                             continue;
 
                         SelectedKeys[i].Frame = newFrame;
+
+                        if (KeyRequiresSorting(SelectedKeys[i]))
+                            needsResorting = true;
                     }
+
+                    if (needsResorting)
+                        SelectedKeys[0].GetTrack().KeyFrames.Sort((x, y) => x.Frame.CompareTo(y.Frame));
                 }
             }
             lastMousePos = new Vector2(mouseInfo.X, mouseInfo.Y);
+        }
+
+        public bool KeyRequiresSorting( AnimationTree.KeyNode key)
+        {
+            var track = key.GetTrack();
+            
+            var index = track.KeyFrames.IndexOf(key.KeyFrame);
+            // Check in between the frames to see if the key is within the expected range
+            float leftFrame = index > 0 ? track.KeyFrames[index - 1].Frame : key.KeyFrame.Frame;
+            float rightFrame = index == track.KeyFrames.Count - 1 ? key.KeyFrame.Frame : track.KeyFrames[index + 1].Frame;
+            // If the last frame is bigger, or the next frame is smaller, we need to resort selected keys
+            if (leftFrame > key.KeyFrame.Frame || rightFrame < key.KeyFrame.Frame)
+                return true;
+
+            return false;
         }
 
         class ResizeOperation
