@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GLFrameworkEngine\GLFrameworkEngine.csproj" />
+    <ProjectReference Include="..\IONET\IONET\IONET.csproj" />
     <ProjectReference Include="..\Toolbox.Core\Toolbox.Core.csproj" />
   </ItemGroup>
 
@@ -47,10 +48,6 @@
     </Reference>
     <Reference Include="ImGuiColorTextEditNet">
       <HintPath>Externals\ImGuiColorTextEditNet.dll</HintPath>
-    </Reference>
-    <Reference Include="IONET">
-      <HintPath>Externals\IONET.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="OpenTK">
       <HintPath>Externals\OpenTK.dll</HintPath>
