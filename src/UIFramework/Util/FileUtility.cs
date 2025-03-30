@@ -20,7 +20,7 @@ namespace MapStudio.UI
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 Process.Start("explorer.exe", folderPath);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                Process.Start("mimeopen", folderPath);
+                Process.Start("xdg-open", folderPath);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 Process.Start("open", $"-R \"{folderPath}\"");
         }
@@ -40,7 +40,7 @@ namespace MapStudio.UI
                 Process.Start("explorer.exe", argument);
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                Process.Start("mimeopen", filePath);
+                Process.Start("xdg-open", filePath);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 Process.Start("open", $"-R \"{filePath}\"");
         }

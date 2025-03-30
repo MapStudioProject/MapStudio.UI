@@ -337,9 +337,23 @@ namespace MapStudio.UI
                 }
             }
 
-            //Red only
-            if (isGrayscale && Name != null && Name.ToLower().EndsWith("spm"))
-                return TexFormat.BC4_UNORM;
+            if (Name != null)
+            {
+                var name = Name.ToLower();
+                
+                //Specular map suffix
+                if (name.EndsWith("spm"))
+                    //Greyscale = BC4 (red only), else BC3 (color)
+                    return isGrayscale ? TexFormat.BC4_UNORM : TexFormat.BC3_UNORM;
+
+                //Normal map suffix
+                if (name.EndsWith("nrm"))
+                    return TexFormat.BC1_UNORM;
+                
+                if (isAlphaTranslucent && name.EndsWith("emm"))
+                    return TexFormat.BC4_UNORM;
+            }
+
             //Has transparency
             if (isAlphaTranslucent)
                 return TexFormat.BC3_SRGB;

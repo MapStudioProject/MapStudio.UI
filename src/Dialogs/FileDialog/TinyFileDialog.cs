@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using System.Runtime.InteropServices;
 using Toolbox.Core;
 
@@ -34,12 +34,15 @@ namespace MapStudio.UI
         public static string OpenFileDialog(List<FileFilter> filters, string fileName, bool multiSelect)
         {
             string[] filterList = toFilterArray(filters);
+            fileName ??= Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             return stringFromAnsi(tinyfd_openFileDialog("Open File", fileName, filterList.Length, filterList, "", multiSelect ? 1 : 0)); ;
         }
 
         public static string SaveFileDialog(List<FileFilter> filters, string fileName)
         {
             string[] filterList = toFilterArray(filters);
+            if (Path.GetDirectoryName(fileName) is not { Length: > 0 })
+                fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), fileName);
             return stringFromAnsi(tinyfd_saveFileDialog("Save File", fileName, filterList.Length, filterList, "")); ;
         }
 
