@@ -67,7 +67,7 @@ namespace MapStudio.UI
         {
             var screenshot = SaveAsScreenshot(
                 GlobalSettings.Viewer.ScreenshotWidth,
-                GlobalSettings.Viewer.ScreenshotHeight, 
+                GlobalSettings.Viewer.ScreenshotHeight,
                 GlobalSettings.Viewer.ScreenshotAlpha);
 
             ImguiFileDialog dlg = new ImguiFileDialog();
@@ -105,7 +105,8 @@ namespace MapStudio.UI
             Viewports.Add(new ViewportScreen("Screen2", new Camera() { Direction = Camera.FaceDirection.Top }));
             Viewports.Add(new ViewportScreen("Screen3", new Camera() { Direction = Camera.FaceDirection.Right }));
             Viewports.Add(new ViewportScreen("Screen4", new Camera() { Direction = Camera.FaceDirection.Left }));
-           foreach (var viewport in this.Viewports) {
+            foreach (var viewport in this.Viewports)
+            {
                 viewport.Camera.Mode = cam.Mode;
                 viewport.Camera.Fov = cam.Fov;
                 viewport.Camera.ZNear = cam.ZNear;
@@ -123,7 +124,8 @@ namespace MapStudio.UI
             contextMenuOpen = false;
         }
 
-        public void SetActive() {
+        public void SetActive()
+        {
             Pipeline._context.SetActive();
             if (ActiveModel == null && ModelList.Count > 0)
                 ActiveModel = ModelList.FirstOrDefault();
@@ -154,6 +156,13 @@ namespace MapStudio.UI
                     DrawGizmoSettings(pos3);
 
                     ImGui.Checkbox(TranslationSource.GetText("DROP_TO_COLLISION"), ref Pipeline._context.EnableDropToCollision);
+
+                    if (Runtime.ResolutionScale != 1.0f && this.Viewports.Count > 0)
+                    {
+                        ImGui.SameLine();
+                        // Display currently set resolution
+                        ImGui.Text($"{(int)(this.Viewports[0].Camera.Width)} x {(int)(this.Viewports[0].Camera.Height)}");
+                    }
 
                     ImGui.EndMenuBar();
                 }
@@ -255,7 +264,8 @@ namespace MapStudio.UI
             }
             ImGui.EndChild();
 
-            if (ContextMenus.Count > 0 && !contextMenuOpen) {
+            if (ContextMenus.Count > 0 && !contextMenuOpen)
+            {
                 ImGui.CloseCurrentPopup();
 
                 ImGui.OpenPopup("contextMenuPopup");
@@ -339,7 +349,7 @@ namespace MapStudio.UI
             string text = $"{TranslationSource.GetText("SHADING")} : [{DebugShaderRender.DebugRendering}]";
 
             ImGui.PushItemWidth(150);
-            ImguiCustomWidgets.ComboScrollable<DebugShaderRender.DebugRender>($"##debugShading", text, ref DebugShaderRender.DebugRendering, 
+            ImguiCustomWidgets.ComboScrollable<DebugShaderRender.DebugRender>($"##debugShading", text, ref DebugShaderRender.DebugRendering,
                 Enum.GetValues(typeof(DebugShaderRender.DebugRender)).Cast<DebugShaderRender.DebugRender>(), () =>
                 {
                     GLContext.ActiveContext.UpdateViewport = true;
@@ -386,7 +396,7 @@ namespace MapStudio.UI
                     GLContext.ActiveContext.UpdateViewport = true;
                 }, ImGuiComboFlags.NoArrowButton | ImGuiComboFlags.HeightLargest);
             ImGui.PopItemWidth();
-            
+
 
             ImGui.SameLine();
 
@@ -648,7 +658,7 @@ namespace MapStudio.UI
             }, "SETTINGS"));
 
             if (!isPlaying)
-                menus.Add(new MenuItemModel($"{IconManager.PLAY_ICON}", () => 
+                menus.Add(new MenuItemModel($"{IconManager.PLAY_ICON}", () =>
                 {
                     StudioSystem.Instance.Run();
                     ReloadMenus();
@@ -719,7 +729,8 @@ namespace MapStudio.UI
                         ImGui.PushStyleColor(ImGuiCol.Button, selectionColor);
                     }
 
-                    if (ImGui.Button(item.Header, menuSize)) {
+                    if (ImGui.Button(item.Header, menuSize))
+                    {
                         item.Command.Execute(item);
                     }
                     if (ImGui.IsItemHovered() && !string.IsNullOrEmpty(item.ToolTip))
@@ -750,5 +761,6 @@ namespace MapStudio.UI
             Pipeline._context.TransformTools.UpdateTransformMode(TransformEngine.TransformActions.Translate);
 
             ReloadMenus();
-        }    }
+        }
+    }
 }

@@ -16,7 +16,8 @@ namespace MapStudio.UI
         private GlobalSettings Settings;
         private int selectedIndex = 0;
 
-        public SettingsWindow(GlobalSettings settings) {
+        public SettingsWindow(GlobalSettings settings)
+        {
             Settings = settings;
             Opened = false;
             Size = new Vector2(500, 700);
@@ -71,7 +72,7 @@ namespace MapStudio.UI
                 selectedIndex = index;
             }
             var pos2 = ImGui.GetCursorPos();
-            var textH= ImGui.CalcTextSize(text).Y;
+            var textH = ImGui.CalcTextSize(text).Y;
 
             ImGui.SetCursorPos(pos);
             ImGui.SetCursorPosY(pos.Y + ((size.Y - textH) * 0.5f));
@@ -95,6 +96,10 @@ namespace MapStudio.UI
                 ImGuiHelper.InputFromInt("Screenshot Width", Settings.Viewer, "ScreenshotWidth");
                 ImGuiHelper.InputFromInt("Screenshot Height", Settings.Viewer, "ScreenshotHeight");
                 ImGuiHelper.InputFromBoolean("Save Screenshot Alpha", Settings.Viewer, "ScreenshotAlpha");
+                if (ImGuiHelper.InputFromFloat("Resolution Scale", Settings.Viewer, "ResolutionScale", true, 0.01f, 0.01f, 1f))
+                {
+                    Runtime.ResolutionScale = Settings.Viewer.ResolutionScale;
+                }
             }
         }
 

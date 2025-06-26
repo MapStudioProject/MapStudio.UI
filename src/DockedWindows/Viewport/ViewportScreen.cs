@@ -6,6 +6,7 @@ using ImGuiNET;
 using OpenTK.Graphics.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Toolbox.Core;
 
 namespace MapStudio.UI
 {
@@ -24,7 +25,8 @@ namespace MapStudio.UI
 
         private Framebuffer FinalBuffer;
 
-        public ViewportScreen(string name, Camera camera) {
+        public ViewportScreen(string name, Camera camera)
+        {
             Name = name;
             Camera = camera;
 
@@ -34,9 +36,9 @@ namespace MapStudio.UI
 
         public void RenderViewportDisplay(ViewportRenderer Pipeline)
         {
-           // Pipeline._context.Camera = Camera;
-
-            var size = ImGui.GetWindowSize();
+            // Pipeline._context.Camera = Camera;
+            var windowSize = ImGui.GetWindowSize();
+            var size = ImGui.GetWindowSize() * Runtime.ResolutionScale;
             float pos = ImGui.GetCursorPosX(); ;
             if (Pipeline._context.Camera.UseSquareAspect)
             {
@@ -108,7 +110,7 @@ namespace MapStudio.UI
             if (Pipeline._context.Camera.UseSquareAspect)
                 ImGui.SetCursorPosX(pos);
 
-            ImGui.Image((IntPtr)id, size, new System.Numerics.Vector2(0, 1), new System.Numerics.Vector2(1, 0));
+            ImGui.Image((IntPtr)id, windowSize, new System.Numerics.Vector2(0, 1), new System.Numerics.Vector2(1, 0));
             ImGui.SetItemAllowOverlap();
 
             DrawCustomCursors();
@@ -214,7 +216,8 @@ namespace MapStudio.UI
             return GLTexture2D.FromBitmap(bitmap);
         }
 
-        public Image<Rgba32> SaveAsScreenshot(ViewportRenderer renderer, int width, int height, bool enableAlpha = false) {
+        public Image<Rgba32> SaveAsScreenshot(ViewportRenderer renderer, int width, int height, bool enableAlpha = false)
+        {
             //Save into an fbo that supports an alpha channel
             Framebuffer fbo = new Framebuffer(FramebufferTarget.Framebuffer,
              1, 1, PixelInternalFormat.Rgba16f, 1);

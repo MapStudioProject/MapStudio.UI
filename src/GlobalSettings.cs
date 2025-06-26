@@ -74,9 +74,9 @@ namespace MapStudio.UI
         /// <returns></returns>
         public static GlobalSettings Load()
         {
-            if (!File.Exists(Path.Combine(Runtime.ExecutableDir,"ConfigGlobal.json"))) { new GlobalSettings().Save(); }
+            if (!File.Exists(Path.Combine(Runtime.ExecutableDir, "ConfigGlobal.json"))) { new GlobalSettings().Save(); }
 
-            var config = JsonConvert.DeserializeObject<GlobalSettings>(File.ReadAllText(Path.Combine(Runtime.ExecutableDir,"ConfigGlobal.json")), new
+            var config = JsonConvert.DeserializeObject<GlobalSettings>(File.ReadAllText(Path.Combine(Runtime.ExecutableDir, "ConfigGlobal.json")), new
                 JsonSerializerSettings()
             {
                 //If settings get added, don't alter the defaults
@@ -91,7 +91,8 @@ namespace MapStudio.UI
         /// <summary>
         /// Reloads the current language in the program.
         /// </summary>
-        public void ReloadLanguage() {
+        public void ReloadLanguage()
+        {
             TranslationSource.Instance.Update(Program.Language);
         }
 
@@ -133,7 +134,7 @@ namespace MapStudio.UI
         /// </summary>
         public void Save()
         {
-            File.WriteAllText(Path.Combine(Runtime.ExecutableDir,"ConfigGlobal.json"), JsonConvert.SerializeObject(this, Formatting.Indented));
+            File.WriteAllText(Path.Combine(Runtime.ExecutableDir, "ConfigGlobal.json"), JsonConvert.SerializeObject(this, Formatting.Indented));
             ApplyConfiguration();
         }
 
@@ -156,6 +157,8 @@ namespace MapStudio.UI
                 _context.EnableFog = Viewer.DisplayFog;
                 _context.EnableBloom = Viewer.DisplayBloom;
             }
+
+            Runtime.ResolutionScale = Viewer.ResolutionScale;
 
             DrawableBackground.Display = Background.Display;
             DrawableBackground.BackgroundTop = Background.TopColor;
@@ -190,6 +193,7 @@ namespace MapStudio.UI
 
             Viewer.DisplayBloom = _context.EnableBloom;
             Viewer.DisplayFog = _context.EnableFog;
+            Viewer.ResolutionScale = Runtime.ResolutionScale;
 
             Background.Display = DrawableBackground.Display;
             Background.TopColor = DrawableBackground.BackgroundTop;
@@ -238,10 +242,11 @@ namespace MapStudio.UI
             static string DefaultProjectPath()
             {
                 string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                return Path.Combine(local,"MapStudio");
+                return Path.Combine(local, "MapStudio");
             }
 
-            public void ResetProjectDir() {
+            public void ResetProjectDir()
+            {
                 ProjectDirectory = DefaultProjectPath();
             }
 
@@ -286,6 +291,7 @@ namespace MapStudio.UI
             public int ScreenshotWidth { get; set; } = 1920 * 2;
             public int ScreenshotHeight { get; set; } = 1080 * 2;
             public bool ScreenshotAlpha { get; set; } = false;
+            public float ResolutionScale { get; set; } = 1.0f;
         }
 
         public class AssetSettings
