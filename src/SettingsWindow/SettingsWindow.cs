@@ -99,6 +99,7 @@ namespace MapStudio.UI
                 if (ImGuiHelper.InputFromFloat("Resolution Scale", Settings.Viewer, "ResolutionScale", true, 0.01f, 0.01f, 1f))
                 {
                     Runtime.ResolutionScale = Settings.Viewer.ResolutionScale;
+                    Settings.Save();
                 }
             }
         }
