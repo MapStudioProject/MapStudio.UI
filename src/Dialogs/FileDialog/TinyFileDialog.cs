@@ -38,11 +38,14 @@ namespace MapStudio.UI
             return stringFromAnsi(tinyfd_openFileDialog("Open File", fileName, filterList.Length, filterList, "", multiSelect ? 1 : 0)); ;
         }
 
+        private static bool _hasExportedBefore; //quick and dirty bool to prevent initial file dialog from opening in invalid directory
+
         public static string SaveFileDialog(List<FileFilter> filters, string fileName)
         {
             string[] filterList = toFilterArray(filters);
-            if (Path.GetDirectoryName(fileName) is not { Length: > 0 })
+            if (!_hasExportedBefore)
                 fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), fileName);
+            _hasExportedBefore = true;
             return stringFromAnsi(tinyfd_saveFileDialog("Save File", fileName, filterList.Length, filterList, "")); ;
         }
 
