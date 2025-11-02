@@ -8,7 +8,7 @@ namespace MapStudio.UI
 {
     public class TinyFileDialog
     {
-        [DllImport("tinyfiledialogs", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tinyfiledialogs", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr tinyfd_openFileDialog(string aTitle,
             string aDefaultPathAndFile,
             int aNumOfFilterPatterns,
@@ -16,19 +16,19 @@ namespace MapStudio.UI
             string aSingleFilterDescription,
             int aAllowMultipleSelects);
 
-        [DllImport("tinyfiledialogs", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tinyfiledialogs", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr tinyfd_saveFileDialog(string aTitle,
             string aDefaultPathAndFile,
             int aNumOfFilterPatterns,
             string[] aFilterPatterns,
             string aSingleFilterDescription);
 
-        [DllImport("tinyfiledialogs", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tinyfiledialogs", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr tinyfd_selectFolderDialog(string aTitle, string aDefaultPathAndFile);
 
-        [DllImport("tinyfiledialogs", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tinyfiledialogs", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         public static extern int tinyfd_notifyPopup(string aTitle, string aMessage, string aIconType);
-        [DllImport("tinyfiledialogs", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tinyfiledialogs", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         public static extern int tinyfd_messageBox(string aTitle, string aMessage, string aDialogTyle, string aIconType, int aDefaultButton);
 
         public static string OpenFileDialog(List<FileFilter> filters, string fileName, bool multiSelect)
