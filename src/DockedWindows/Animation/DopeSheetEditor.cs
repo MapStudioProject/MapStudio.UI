@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Linq;
-using ImGuiNET;
-using Toolbox.Core.Animations;
-using CurveEditorLibrary;
+﻿using CurveEditorLibrary;
 using GLFrameworkEngine;
+using ImGuiNET;
+using OpenTK.Input;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Numerics;
+using Toolbox.Core.Animations;
 using UIFramework;
 
 namespace MapStudio.UI
@@ -300,6 +302,16 @@ namespace MapStudio.UI
             ImGui.GetWindowDrawList().AddRectFilled(minBox, maxBox,
                ImGui.ColorConvertFloat4ToU32(new Vector4(0.5f, 0.5f, 0.5f, 0.1f)));
 
+            const float minPixelDistance = 11f;
+            const int maxDraw = 200;
+            const float cullMargin = 30; // expand by atleast 30 for values at the edges 
+
+            float visibleLeft = screenPos.X - cullMargin;
+            float visibleRight = screenPos.X + Timeline.Width + cullMargin;
+
+            int drawCounter = 0;
+
+            float lastDrawnX = float.MinValue;
             foreach (var keyFrame in keyFrames)
             {
                 float height = ImGui.GetFrameHeight();
@@ -309,6 +321,14 @@ namespace MapStudio.UI
 
                 //Draw at the frame position
                 var pos = screenPos + new Vector2(keyFrame.Frame * frameWidth - offset, height / 2);
+                if (pos.X < visibleLeft || pos.X > visibleRight)
+                    continue;
+
+                // Ensure pixels don't overlap from a distance
+                // This helps reduce the render load for imgui
+                if (MathF.Abs(pos.X - lastDrawnX) < minPixelDistance || drawCounter > maxDraw)
+                    continue;
+
                 //Circle to represent a keyed value
                 ImGui.GetWindowDrawList().AddCircleFilled(
                     new Vector2(pos.X, pos.Y), 5,
@@ -323,6 +343,8 @@ namespace MapStudio.UI
 
                 keyFrame.Min = min;
                 keyFrame.Max = max;
+
+                lastDrawnX = pos.X;
 
                 //Select via selection box
                 if (SelectionBox.IsActive)
@@ -358,8 +380,9 @@ namespace MapStudio.UI
                     keyFrame.IsSelected = true;
                     IsMoving = true;
                 }
-            }
 
+                drawCounter++;
+            }
             ImGui.SetCursorPos(curPos);
         }
 
