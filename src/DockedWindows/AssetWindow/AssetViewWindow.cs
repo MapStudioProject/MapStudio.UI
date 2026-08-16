@@ -515,19 +515,32 @@ namespace MapStudio.UI
 
         #region Asset Loading
 
+        /// <summary>
+        /// Filters assets based on its visibility and some search term.
+        /// </summary>
+        /// <param name="assets">Full list of assets</param>
+        /// <returns>Filtered list of assets</returns>
         private List<AssetItem> UpdateSearch(List<AssetItem> assets)
         {
             List<AssetItem> filtered = new List<AssetItem>();
             for (int i = 0; i < assets.Count; i++)
             {
-                bool HasText = assets[i].Name != null &&
-                     assets[i].Name.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) >= 0;
-
                 if (!assets[i].Visible)
+                    // Not visible
                     continue;
 
-                if (isSearch && HasText || !isSearch)
-                    filtered.Add(assets[i]);
+                if (isSearch)
+                {
+                    // Search for matches if filtering is applied
+                    bool hasText = assets[i].Name != null &&
+                         assets[i].Name.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                    hasText |= assets[i].Aliases.Any(s => s.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                    if (!hasText)
+                        continue;
+                }
+                filtered.Add(assets[i]);
             }
             return filtered;
         }
@@ -666,6 +679,11 @@ namespace MapStudio.UI
         public object Tag { get; set; }
 
         public string DisplayName { get; internal set; }
+
+        /// <summary>
+        /// Aliases of the asset, which are also valid search terms
+        /// </summary>
+        public string[] Aliases { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// The image ID of the icon. 
