@@ -107,6 +107,7 @@ namespace MapStudio.UI
         public const char ICON_WII_U = '\uf0a0'; // HDD
         public const char ICON_SWITCH = '\uf11b'; // gamepad
         public const char ICON_MOD = '\uf0ad'; // wrench
+        public const char ICON_DOWNLOAD = '\uf019';
 
         public const int ICON_SIZE = 18;
 
