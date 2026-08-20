@@ -50,7 +50,8 @@ namespace MapStudio.UI
 
         public static void ShowException(Exception ex)
         {
-            string message = ex.Message.Replace("'", "");
+            // Replace both ' and " with nothing. Messages with these values cause INVALID MESSAGE WITH QUOTES
+            string message = ex.Message.Replace("'", "").Replace("\"", "");
 
             Clipboard.SetText($"{ex.Message} \n{ex.StackTrace}");
             TinyFileDialog.MessageBoxErrorOk($"{message} Details copied to clipboard!");
