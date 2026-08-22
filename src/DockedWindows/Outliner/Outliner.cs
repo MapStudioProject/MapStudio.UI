@@ -144,8 +144,7 @@ namespace MapStudio.UI
 
         private bool GetNodePosition(NodeBase target, NodeBase parent, ref float pos, float itemHeight)
         {
-            bool HasText = parent.Header != null &&
-              parent.Header.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+            bool HasText = parent.IsNameMatch(_searchText);
 
             //Search is active and node is found but is not in results so skip scrolling
             if (isSearch && parent == target && !HasText)
@@ -303,8 +302,7 @@ namespace MapStudio.UI
 
         private void CalculateCount(NodeBase node, ref int counter)
         {
-            bool HasText = node.Header != null &&
-             node.Header.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+            bool HasText = node.IsNameMatch(_searchText);
 
             if (isSearch && HasText || !isSearch)
             {
@@ -328,8 +326,7 @@ namespace MapStudio.UI
 
         public void DrawNode(NodeBase node, float itemHeight, int level = 0)
         {
-            bool HasText = node.Header != null &&
-                 node.Header.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+            bool HasText = node.IsNameMatch(_searchText);
 
             char icon = IconManager.FOLDER_ICON;
             if (node.Tag is STGenericMesh)
@@ -818,14 +815,7 @@ namespace MapStudio.UI
 
         private List<NodeBase> GetSearchableNodes(List<NodeBase> nodes)
         {
-            List<NodeBase> nodeList = new List<NodeBase>();
-            foreach (var node in nodes)
-            {
-                bool hasText = node.Header != null && node.Header.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) >= 0;
-                if (hasText)
-                    nodeList.Add(node);
-            }
-            return nodeList;
+            return nodes.Where(n => n.IsNameMatch(_searchText)).ToList();
         }
 
         private void LoadTextureIcon(NodeBase node)
