@@ -6,53 +6,46 @@ namespace MapStudio.UI
 {
     public static class Clipboard
     {
-        public static void Copy(string val)
+        public static void SetText(string text)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                $"echo {val} | clip".Bat();
+                Shell.Run("powershell", $"-command \"Set-Clipboard -Value \\\"{text}\\\"\"");
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                $"echo {val} | clip".Bat();
+                var script = "echo $XDG_SESSION_TYPE".Bash();
+                if ("echo $XDG_SESSION_TYPE".Bash().StartsWith("wayland"))
+                    $"echo \"{text}\" | wl-copy".Bash();
+                else
+                    $"echo \"{text}\" | xclip -selection clipboard".Bash();
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                $"echo \"{val}\" | pbcopy".Bash();
+                $"echo \"{text}\" | pbcopy".Bash();
             }
         }
-
-        public static void SetText(string text)
-        {
-            var powershell = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "powershell",
-                    Arguments = $"-command \"Set-Clipboard -Value \\\"{text}\\\"\""
-                }
-            };
-            powershell.Start();
-            powershell.WaitForExit();
-        }
-
+        
         public static string GetText()
         {
-            var powershell = new Process
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    RedirectStandardOutput = true,
-                    FileName = "powershell",
-                    Arguments = "-command \"Get-Clipboard\""
-                }
-            };
+                var text = Shell.Run("powershell", "-command \"Get-Clipboard\"");
+                return text.TrimEnd();
+            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                if ("echo $XDG_SESSION_TYPE".Bash() == "wayland")
+                    return "wl-paste".Bash();
+                else
+                    return "xclip -o -selection clipboard".Bash();
+            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return "pbpaste".Bash();
+            }
 
-            powershell.Start();
-            string text = powershell.StandardOutput.ReadToEnd();
-            powershell.StandardOutput.Close();
-            powershell.WaitForExit();
-            return text.TrimEnd();
+            return null;
         }
     }
 }
