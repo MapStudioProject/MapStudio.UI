@@ -14,10 +14,11 @@ namespace MapStudio.UI
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                if ("echo $XDG_SESSION_TYPE".Bash() == "wayland")
-                    $"echo {text} | wl-copy".Bash();
+                var script = "echo $XDG_SESSION_TYPE".Bash();
+                if ("echo $XDG_SESSION_TYPE".Bash().StartsWith("wayland"))
+                    $"echo \"{text}\" | wl-copy".Bash();
                 else
-                    $"echo {text} | xclip -selection clipboard".Bash();
+                    $"echo \"{text}\" | xclip -selection clipboard".Bash();
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
