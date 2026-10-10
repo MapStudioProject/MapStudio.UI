@@ -20,7 +20,7 @@ namespace MapStudio.UI
             return result;
         }
 
-        private static string Run(string filename, string arguments)
+        public static string Run(string filename, string arguments)
         {
             var process = new Process()
             {
