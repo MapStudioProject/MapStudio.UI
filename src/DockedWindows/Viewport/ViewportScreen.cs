@@ -74,7 +74,6 @@ namespace MapStudio.UI
             var transformTools = Pipeline._context.TransformTools;
             bool isTransforming = false;
             bool isPicking = false;
-            bool isImguiActive = ImGui.IsAnyItemActive();
 
             if (transformTools.ActiveActions.Count > 0 && transformTools.TransformSettings.ActiveAxis != TransformEngine.Axis.None)
                 isTransforming = true;
@@ -83,8 +82,7 @@ namespace MapStudio.UI
             if (Pipeline._context.PickingTools.UseEyeDropper)
                 isPicking = true;
 
-            if ((IsFocused && _mouseDown) ||
-                (ImGui.IsWindowHovered() && !isImguiActive) || _mouseDown || isTransforming || isPicking)
+            if (_mouseDown || (!ImGui.IsAnyItemActive() && ImGui.IsWindowHovered()) || isTransforming || isPicking)
             {
                 Pipeline._context.Focused = true;
 
