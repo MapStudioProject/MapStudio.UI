@@ -312,6 +312,7 @@ namespace MapStudio.UI
         {
             // Update the opengl viewport
             SetViewport();
+            _context.UpdateViewport = true;
 
             //Resize all the screen buffers
             outputBuffer.Resize(Width, Height);
