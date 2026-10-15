@@ -37,9 +37,8 @@ namespace MapStudio.UI
         public void RenderViewportDisplay(ViewportRenderer Pipeline)
         {
             // Pipeline._context.Camera = Camera;
-            var windowSize = ImGui.GetWindowSize();
             var size = ImGui.GetWindowSize() * Runtime.ResolutionScale;
-            float pos = ImGui.GetCursorPosX(); ;
+            float pos = ImGui.GetCursorPosX();
             if (Pipeline._context.Camera.UseSquareAspect)
             {
                 pos = MathF.Max((size.X - size.Y) / 2, 0);
@@ -110,7 +109,7 @@ namespace MapStudio.UI
             if (Pipeline._context.Camera.UseSquareAspect)
                 ImGui.SetCursorPosX(pos);
 
-            ImGui.Image((IntPtr)id, windowSize, new System.Numerics.Vector2(0, 1), new System.Numerics.Vector2(1, 0));
+            ImGui.Image((IntPtr)id, size, new System.Numerics.Vector2(0, 1), new System.Numerics.Vector2(1, 0));
             ImGui.SetItemAllowOverlap();
 
             DrawCustomCursors();
