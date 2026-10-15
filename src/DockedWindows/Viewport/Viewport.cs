@@ -75,9 +75,7 @@ namespace MapStudio.UI
             dlg.FileName = DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
             dlg.AddFilter(".png", "PNG");
             if (dlg.ShowDialog())
-            {
-                screenshot.Save(dlg.FilePath);
-            }
+                screenshot.Save(dlg.FilePath.EndsWith(".png") ? dlg.FilePath : dlg.FilePath + ".png");
         }
 
         public GLTexture2D SaveAsScreenshotGLTexture(int width, int height)
