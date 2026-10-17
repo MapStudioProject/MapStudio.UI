@@ -27,12 +27,10 @@ namespace MapStudio.UI
 
         public static void SaveRecentFile(string recentFile, string filePath, List<string> recentList)
         {
-            if (recentList.Contains(recentFile))
-                return;
-
             LoadRecentList(filePath, recentList); //load list from file
-            if (!(recentList.Contains(recentFile))) //prevent duplication on recent list
-                recentList.Insert(0, recentFile); //insert given path into list
+            if (recentList.Contains(recentFile)) //prevent duplication on recent list
+                recentList.Remove(recentFile);
+            recentList.Insert(0, recentFile); //insert given path into list
 
             recentList = recentList.Distinct().ToList();
 
