@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -71,9 +72,9 @@ namespace MapStudio.UI
         {
             dialogKey = key;
 
-            string desc = "";
+            string extension = "";
             if (filters.Count > 0)
-                desc = $"{filters[0].Description} (*{filters[0].Extension})";
+                extension = $"{filters[0].Extension}";
 
             if (!SelectedFilters.ContainsKey(key))
                 SelectedFilters.Add(key, 0);
@@ -83,7 +84,7 @@ namespace MapStudio.UI
                 var ofd = TinyFileDialog.SaveFileDialog(filters, FileName);
                 if (!string.IsNullOrEmpty(ofd))
                 {
-                    this.FilePaths = new string[] { ofd };
+                    this.FilePaths = new[] { Path.HasExtension(ofd) ? ofd : ofd + extension }; //Automatically add default extension if none given
                     return true;
                 }
             }
