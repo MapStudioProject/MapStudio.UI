@@ -39,7 +39,7 @@ namespace MapStudio.UI
         /// <summary>
         /// The file name to display in the dialog when loaded.
         /// </summary>
-        public string FileName { get; set; }
+        public string FileName = string.Empty;
 
         /// <summary>
         /// Determines to allow multi selection or not.
