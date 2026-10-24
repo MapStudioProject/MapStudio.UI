@@ -17,12 +17,13 @@ namespace MapStudio.UI
             if (!Directory.Exists(folderPath))
                 return;
 
+            folderPath = $"\"{folderPath}\"";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 Process.Start("explorer.exe", folderPath);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 Process.Start("xdg-open", folderPath);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                Process.Start("open", $"-R \"{folderPath}\"");
+                Process.Start("open", $"-R {folderPath}");
         }
 
         /// <summary>
@@ -34,11 +35,9 @@ namespace MapStudio.UI
             if (!File.Exists(filePath))
                 return;
 
+            filePath = $"\"{filePath}\"";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                string argument = "/select, \"" + filePath + "\"";
-                Process.Start("explorer.exe", argument);
-            }
+                Process.Start("explorer.exe", $"/select, {filePath}");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 Process.Start("xdg-open", filePath);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))

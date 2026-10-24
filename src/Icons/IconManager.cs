@@ -246,8 +246,8 @@ namespace MapStudio.UI
             if (!Icons.ContainsKey(filePath)) {
                 var texture = GLTexture2D.FromBitmap(System.IO.File.ReadAllBytes(filePath), width, height);
                 //Make the icon clear to see
-                texture.MagFilter = OpenTK.Graphics.OpenGL.TextureMagFilter.Nearest;
-                texture.MinFilter = OpenTK.Graphics.OpenGL.TextureMinFilter.Nearest;
+                texture.MagFilter = OpenTK.Graphics.OpenGL.TextureMagFilter.Linear;
+                texture.MinFilter = OpenTK.Graphics.OpenGL.TextureMinFilter.Linear;
                 texture.Bind();
                 texture.UpdateParameters();
                 texture.Unbind();
